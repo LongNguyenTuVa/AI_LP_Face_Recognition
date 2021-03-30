@@ -41,6 +41,7 @@ class LP_Detect:
         self.wpod_net = load_model(model_path)
 
     def detect(self, image_path = None):
+        
         plate_image,coordinate = get_plate(image_path, self.wpod_net)
 
         return plate_image

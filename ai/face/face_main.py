@@ -5,6 +5,7 @@ import numpy as np
 
 def main():
     embedding = False
+    top_10 = False
     template_path = "C:/Users/LongNguyenThanh/Desktop/Python Files/Face_Recognition/FaceNet/Data/Template"
     target_path = "C:/Users/LongNguyenThanh/Desktop/Python Files/Face_Recognition/FaceNet/Data/Target"
 
@@ -24,13 +25,23 @@ def main():
     print("----------------------------------------------------------------")
 
     # Recognize + distance compare
-    recognize = Recognize()
+    recognize = Recognize(0.8)
     faces, face_name, dist_10 = recognize.face_recognize(face_template, embeddings_template, embeddings_target, names_template, names_target)
     
-    # Print distance + face
-    for i in range(len(dist_10)):
-        print(face_name[i], "{:.2f}".format(dist_10[i]))
-        plt.imshow(faces[i].permute(1, 2, 0).numpy())
+    if top_10 == True:
+        # Print distance + face
+        for i in range(len(dist_10)):
+            print("Identity Found:  " + face_name[i] + " with distance: " "{:.2f}".format(dist_10[i]))
+            print(faces[i].permute(1, 2, 0).numpy().shape)
+            plt.imshow(faces[i].permute(1, 2, 0).numpy())
+            plt.show()
+    else:
+        dist = sorted(dist_10)[1]
+        name = face_name[dist_10.index(dist)]
+        face = faces[dist_10.index(dist)]
+
+        print("Identity Found:  " + name + " with distance: " "{:.2f}".format(dist))
+        plt.imshow((face.permute(1, 2, 0).numpy()))
         plt.show()
 
 if __name__ == "__main__":

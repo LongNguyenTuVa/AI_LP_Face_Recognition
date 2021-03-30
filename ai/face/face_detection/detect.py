@@ -22,10 +22,11 @@ def save_npy(names, embeddings, face_alligned, path):
 
 class Detect:
     def __init__(self):
+        # save_path='single_image.jpg'
         self.detection_model = MTCNN(
                 image_size=160, margin=0, min_face_size=20, keep_all=False,
                 thresholds=[0.6, 0.7, 0.7], factor=0.709, post_process=True,
-                device=device
+                select_largest=True, device=device
             )
         self.embedding_model = InceptionResnetV1(pretrained='vggface2').eval().to(device)
 
