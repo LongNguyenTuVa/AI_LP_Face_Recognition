@@ -37,12 +37,12 @@ def get_plate(image_path, wpod_net, Dmax=608, Dmin=256):
     return plate_image, coordinate
 
 class LP_Detect:
-    def __init__(self, model_path = "lp_detection/wpod-net.json"):
+    def __init__(self, model_path = "license_plate/models/wpod-net.json"):
         self.wpod_net = load_model(model_path)
 
     def detect(self, image_path = None):
         
-        plate_image,coordinate = get_plate(image_path, self.wpod_net)
+        plate_image, coordinate = get_plate(image_path, self.wpod_net)
 
         return plate_image
 
