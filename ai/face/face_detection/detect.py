@@ -29,7 +29,6 @@ class Detect:
                 select_largest=True, device=device
             )
         self.embedding_model = InceptionResnetV1(pretrained='vggface2').eval().to(device)
-
     def face_detect(self, path, save=False):
         # Load Folder as Dataset
         dataset = datasets.ImageFolder(path)

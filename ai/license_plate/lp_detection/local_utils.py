@@ -118,7 +118,7 @@ def normal(pts, side, mn, MN):
     return pts_prop
 
 # Reconstruction function from predict value into plate crpoped from image
-def reconstruct(I, Iresized, Yr, lp_threshold):
+def reconstruct(I, Iresized, Yr, lp_threshold, wh_threshold):
     # 4 max-pooling layers, stride = 2
     net_stride = 2**4
     side = ((208 + 40)/2)/net_stride
@@ -169,11 +169,11 @@ def reconstruct(I, Iresized, Yr, lp_threshold):
     final_labels = nms(labels, 0.1)
     final_labels_frontal = nms(labels_frontal, 0.1)
 
-    #print(final_labels_frontal)
-    #assert final_labels_frontal, "No License plate is founded!"
+    # print(final_labels_frontal)
+    assert final_labels_frontal, "No License plate is founded!"
 
     # LP size and type
-    out_size, lp_type = (two_lines, 2) if ((final_labels_frontal[0].wh()[0] / final_labels_frontal[0].wh()[1]) < 1.5) else (one_line, 1) # 1.7
+    out_size, lp_type = (two_lines, 2) if ((final_labels_frontal[0].wh()[0] / final_labels_frontal[0].wh()[1]) < wh_threshold) else (one_line, 1) # 1.7
 
     TLp = []
     Cor = []
@@ -188,7 +188,7 @@ def reconstruct(I, Iresized, Yr, lp_threshold):
             Cor.append(ptsh)
     return final_labels, TLp, lp_type, Cor
 
-def detect_lp(model, I, max_dim, lp_threshold):
+def detect_lp(model, I, max_dim, lp_threshold, wh_threshold=1):
     min_dim_img = min(I.shape[:2])
     factor = float(max_dim) / min_dim_img
     w, h = (np.array(I.shape[1::-1], dtype=float) * factor).astype(int).tolist()
@@ -198,5 +198,5 @@ def detect_lp(model, I, max_dim, lp_threshold):
     Yr = model.predict(T)
     Yr = np.squeeze(Yr)
     #print(Yr.shape)
-    L, TLp, lp_type, Cor = reconstruct(I, Iresized, Yr, lp_threshold)
+    L, TLp, lp_type, Cor = reconstruct(I, Iresized, Yr, lp_threshold, wh_threshold)
     return L, TLp, lp_type, Cor

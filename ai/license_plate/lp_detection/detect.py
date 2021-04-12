@@ -33,7 +33,7 @@ def get_plate(image_path, wpod_net, Dmax=608, Dmin=256):
     ratio = float(max(vehicle.shape[:2])) / min(vehicle.shape[:2])
     side = int(ratio * Dmin)
     bound_dim = min(side, Dmax)
-    _ , plate_image, _, coordinate = detect_lp(wpod_net, vehicle, bound_dim, lp_threshold=0.5)
+    _ , plate_image, _, coordinate = detect_lp(wpod_net, vehicle, bound_dim, lp_threshold=0.5, wh_threshold = 1)
     return plate_image, coordinate
 
 class LP_Detect:
