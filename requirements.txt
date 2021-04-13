@@ -4,4 +4,3 @@ opencv-python==4.5.1.48
 keras==2.4.3
 tensorflow==2.4.1
 flask==1.1.2
-pandas==1.2.4
