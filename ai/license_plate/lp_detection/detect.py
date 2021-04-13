@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
-from lp_detection.local_utils import detect_lp
+from .local_utils import detect_lp
 import os
 from os.path import splitext,basename
 from keras.models import model_from_json
@@ -20,16 +20,15 @@ def load_model(path):
     except Exception as e:
         print(e)
 
-def preprocess_image(image_path,resize=False):
-    img = cv2.imread(image_path)
-    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+def preprocess_image(image, resize=False):
+    img = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     img = img / 255
     if resize:
         img = cv2.resize(img, (224,224))
     return img
 
-def get_plate(image_path, wpod_net, Dmax=608, Dmin=256):
-    vehicle = preprocess_image(image_path)
+def get_plate(image, wpod_net, Dmax=608, Dmin=256):
+    vehicle = preprocess_image(image)
     ratio = float(max(vehicle.shape[:2])) / min(vehicle.shape[:2])
     side = int(ratio * Dmin)
     bound_dim = min(side, Dmax)
@@ -37,13 +36,11 @@ def get_plate(image_path, wpod_net, Dmax=608, Dmin=256):
     return plate_image, coordinate
 
 class LP_Detect:
-    def __init__(self, model_path = "lp_detection/wpod-net.json"):
+    def __init__(self, model_path = "ai/models/wpod-net.json"):
         self.wpod_net = load_model(model_path)
 
-    def detect(self, image_path = None):
-        
-        plate_image,coordinate = get_plate(image_path, self.wpod_net)
-
+    def detect(self, image):
+        plate_image, coordinate = get_plate(image, self.wpod_net)
         return plate_image
 
 
