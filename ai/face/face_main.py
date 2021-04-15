@@ -13,7 +13,7 @@ def main():
         # Detect for template
         detect = Detect()
         if embedding == True:
-            face_template, names_template, embeddings_template = detect.face_detect(template_path, save=True)
+            face_template, names_template, embeddings_template, _ = detect.face_detect(template_path, save=True)
         else:
             npy_file = np.load(template_path + "/" + "data.npy", allow_pickle=True)
             names_template = npy_file.item().get("Names")
@@ -25,7 +25,7 @@ def main():
     try:
         # Detect for Target
         print("----------------------------------------------------------------")
-        face_target, names_target, embeddings_target = detect.face_detect(target_path)
+        face_target, names_target, embeddings_target, probability = detect.face_detect(target_path)
         print("----------------------------------------------------------------")
     except:
         print("Detection Failed")

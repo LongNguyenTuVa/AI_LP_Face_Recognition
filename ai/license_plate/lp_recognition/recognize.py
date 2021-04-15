@@ -176,6 +176,7 @@ class LP_Recognize:
         crop = np.expand_dims(crop.astype('float32') / 255, axis = -1)
         crop = np.expand_dims(crop, axis = 0)
         preds = self.model.predict(crop)
+        print(preds.squeeze().shape)
         t = decode_batch_predictions(preds)
         t = t[0].replace("[UNK]", "*")
         return t
