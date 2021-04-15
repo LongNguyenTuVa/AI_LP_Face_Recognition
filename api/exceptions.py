@@ -11,6 +11,6 @@ class InvalidUsage(Exception):
         self.payload = payload
 
     def to_dict(self):
-        rv = dict(self.payload or ())
-        rv['message'] = self.message
-        return rv
+        response = dict(self.payload or ())
+        response['message'] = self.message
+        return response
