@@ -150,22 +150,34 @@ class LP_Recognize:
         else: 
             # Singleton Pattern Design only instantiate the model once
             self.model = build_model(img_height=self.img_height,img_width=self.img_width)
-            self.model.load_weights('lp_recognition/CV_together_Weight.h5')
+            self.model.load_weights('lp_recognition/CV_together2_Weight.h5')
             self.model = keras.models.Model(
                 self.model.get_layer(name="image").input, self.model.get_layer(name="dense2").output
             )     
             LP_Recognize.__shared_instance = self
 
-    def rec(self, image):
-        # image = cv2.imread(image_path, 0)
-        image = (255*image[0]).astype(np.uint8)
+    def rec(self, image, mode = 1):
+        if mode == 1:
+            t = self.preprocess_predict_image(image)
+            return t
+        else:
+            t = ""
+            image1 = image[:int(image.shape[0]*11/20),:]
+            t1 = self.preprocess_predict_image(image1)
+            image2 = image[int(image.shape[0]*9/20):,:]
+            t2 = self.preprocess_predict_image(image2)
+            t = (t1 + t2).replace("*", "")
+            while len(t) != 8:
+                t += "*"
+            return t
+
+    def preprocess_predict_image(self, image):
         image = cv2.cvtColor(image,cv2.COLOR_BGR2GRAY)
         crop = img_process(image, self.img_height, self.img_width)
         crop = np.expand_dims(crop.astype('float32') / 255, axis = -1)
         crop = np.expand_dims(crop, axis = 0)
         preds = self.model.predict(crop)
         t = decode_batch_predictions(preds)
-
-        return t[0].replace("*", "")
-
+        t = t[0].replace("[UNK]", "*")
+        return t
 
