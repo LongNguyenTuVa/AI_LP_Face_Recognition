@@ -7,6 +7,7 @@ from os.path import splitext,basename
 from keras.models import model_from_json
 from tensorflow import keras
 import glob
+import tensorflow as tf
 
 def load_model(path):
     try:
@@ -20,8 +21,10 @@ def load_model(path):
     except Exception as e:
         print(e)
 
-def preprocess_image(image, resize=False):
-    img = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+def preprocess_image(image,resize=False):
+    img = image
+    # img = img[int(img.shape[0]/5*3):,100:-100]
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     img = img / 255
     if resize:
         img = cv2.resize(img, (224,224))
@@ -32,15 +35,50 @@ def get_plate(image, wpod_net, Dmax=608, Dmin=256):
     ratio = float(max(vehicle.shape[:2])) / min(vehicle.shape[:2])
     side = int(ratio * Dmin)
     bound_dim = min(side, Dmax)
-    _ , plate_image, _, coordinate = detect_lp(wpod_net, vehicle, bound_dim, lp_threshold=0.5, wh_threshold = 1)
+    _ , plate_image, _, coordinate = detect_lp(wpod_net, vehicle, bound_dim, lp_threshold=0.5, wh_threshold = 1.3)
     return plate_image, coordinate
 
 class LP_Detect:
-    def __init__(self, model_path = "ai/models/wpod-net.json"):
-        self.wpod_net = load_model(model_path)
+    __shared_instance = None
+    @staticmethod
+    def getInstance(): 
+        """Static Access Method"""
+        if LP_Detect.__shared_instance == None: 
+            LP_Detect() 
+        return LP_Detect.__shared_instance
+    def __init__(self,):
+        self.coordinate = None
+        self.plate_type = None
+        if LP_Detect.__shared_instance != None: 
+            raise Exception ("This class is a singleton class !") 
+        else: 
+            # Singleton Pattern Design only instantiate the model once
+            self.model = tf.keras.models.load_model('ai/license_plate/lp_detection/Classification_license_plate.h5')
+            self.wpod_net = load_model("ai/license_plate/models/wpod-net.json") 
+            LP_Detect.__shared_instance = self
 
-    def detect(self, image):
-        plate_image, coordinate = get_plate(image, self.wpod_net)
+    def detect(self, image, classify=False):
+        
+        plate_image,self.coordinate = get_plate(image, self.wpod_net)
+        plate_image = (255*plate_image[0]).astype(np.uint8)
+        if classify:
+            plate = cv2.cvtColor(plate_image, cv2.COLOR_BGR2GRAY)
+            plate = cv2.resize(plate, (64, 64))
+            plate = np.expand_dims(plate, axis=0)
+            result=self.model.predict(plate).squeeze()
+            print(result)
+
+            if result[0] > result[1]:
+                self.plate_type = 1
+                plate_image = cv2.resize(plate_image, (470, 110))
+            else:
+                self.plate_type = 2
+                plate_image = cv2.resize(plate_image, (220, 200))
+
         return plate_image
 
+    def get_coord(self):
+        return self.coordinate
 
+    def get_plate_type(self):
+        return self.plate_type

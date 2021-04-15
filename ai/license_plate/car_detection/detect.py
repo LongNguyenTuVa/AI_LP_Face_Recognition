@@ -4,9 +4,9 @@ import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 import torch
-from models.experimental import attempt_load
+from ai.license_plate.models.experimental import attempt_load
 import os
-from utils.general import  non_max_suppression,  \
+from ai.license_plate.utils.general import  non_max_suppression,  \
     scale_coords, xyxy2xywh,  increment_path
 
 img_formats = ['bmp', 'jpg', 'jpeg', 'png', 'tif', 'tiff', 'dng', 'webp', 'mpo']
@@ -57,13 +57,15 @@ class CarDetection:  # for inference
             raise Exception ("This class is a singleton class !") 
         else: 
             # Singleton Pattern Design only instantiate the model once
-            self.model = attempt_load('car_detection/yolov5s.pt', map_location=self.device)   
+            import sys
+            sys.path.append(os.path.join(os.path.dirname(__file__), '../'))
+            self.model = attempt_load('yolov5s.pt', map_location=self.device)   
             CarDetection.__shared_instance = self
         
-    def car_detect(self, image_path):
+    def car_detect(self, img0):
         stride = int(self.model.stride.max())  # model stride
         # dataset = LoadImages(self.image_path, img_size=640, stride=stride)
-        img0 = cv2.imread(image_path)  # BGR
+        # img0 = cv2.imread(image_path)  # BGR
         # Padded resize
         img = letterbox(img0, self.img_size, stride=stride)[0]
         # Convert

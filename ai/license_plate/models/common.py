@@ -12,10 +12,10 @@ import torch.nn as nn
 from PIL import Image
 from torch.cuda import amp
 
-from utils.datasets import letterbox
-from utils.general import non_max_suppression, make_divisible, scale_coords, increment_path, xyxy2xywh
-from utils.plots import color_list, plot_one_box
-from utils.torch_utils import time_synchronized
+from ai.license_plate.utils.datasets import letterbox
+from ai.license_plate.utils.general import non_max_suppression, make_divisible, scale_coords, increment_path, xyxy2xywh
+from ai.license_plate.utils.plots import color_list, plot_one_box
+from ai.license_plate.utils.torch_utils import time_synchronized
 
 
 def autopad(k, p=None):  # kernel, padding

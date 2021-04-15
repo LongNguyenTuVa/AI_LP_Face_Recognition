@@ -1,7 +1,6 @@
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
-from lp_detection.local_utils import detect_lp
 import os, glob, re, time, sys
 from os.path import splitext,basename
 import tensorflow as tf
@@ -150,7 +149,7 @@ class LP_Recognize:
         else: 
             # Singleton Pattern Design only instantiate the model once
             self.model = build_model(img_height=self.img_height,img_width=self.img_width)
-            self.model.load_weights('lp_recognition/CV_together2_Weight.h5')
+            self.model.load_weights('ai/license_plate/models/CV_together_Weight.h5')
             self.model = keras.models.Model(
                 self.model.get_layer(name="image").input, self.model.get_layer(name="dense2").output
             )     

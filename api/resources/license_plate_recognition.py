@@ -2,18 +2,18 @@
 import os, sys
 import cv2
 
-from os.path import dirname, join, abspath
-sys.path.insert(0, abspath(join(dirname(__file__), '../../ai')))
-
-from license_plate.lp_detection.detect import LP_Detect
-from license_plate.lp_recognition.recognize import LP_Recognize
-from utils import generate_image_file_name
+from ai.license_plate.lp_detection.detect import LP_Detect
+from ai.license_plate.lp_recognition.recognize import LP_Recognize
+from ai.license_plate.car_detection.detect import CarDetection
+from api.utils import generate_image_file_name
 
 class LPRecognition:
 
     def __init__(self, data_dir):
         self.lp_detection = LP_Detect()
         self.lp_recognition = LP_Recognize()
+        self.car_detection = CarDetection()
+
         self.lp_dir = os.path.join(data_dir, 'license_plates')
 
         # create license plate folder
@@ -21,13 +21,15 @@ class LPRecognition:
 
     def recognize(self, image):
         # Detect license plate first
-        lp_image = self.lp_detection.detect(image)
-        lp_text = self.lp_recognition.rec(lp_image)
+        car_image = self.car_detection.car_detect(image)
+        lp_image = self.lp_detection.detect(car_image, classify=True)
+        plate_type = self.lp_detection.get_plate_type()
+        lp_text = self.lp_recognition.rec(lp_image, mode=plate_type)
         
         # Save image
         if lp_image is not None:
             image_name = generate_image_file_name()
             lp_image_path = os.path.join(self.lp_dir, image_name)
-            cv2.imwrite(lp_image_path, lp_image[0]*255)
+            cv2.imwrite(lp_image_path, lp_image)
 
         return lp_image_path, lp_text
