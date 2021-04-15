@@ -139,6 +139,7 @@ cython_debug/
 
 # test data
 ai/license_plate/data/
+ai/face/data/
 
 # log
 logs
