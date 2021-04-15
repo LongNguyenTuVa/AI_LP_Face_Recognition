@@ -6,6 +6,7 @@ from ai.license_plate.lp_detection.detect import LP_Detect
 from ai.license_plate.lp_recognition.recognize import LP_Recognize
 from ai.license_plate.car_detection.detect import CarDetection
 from api.utils import generate_image_file_name
+from api.exceptions import InvalidUsage
 
 class LPRecognition:
 
@@ -24,10 +25,17 @@ class LPRecognition:
         cv2.imwrite(os.path.join(self.lp_dir, image_name), cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
 
         # Detect license plate first
-        car_image = self.car_detection.car_detect(image)
-        lp_image, detection_conf, plate_type = self.lp_detection.detect(car_image, classify=True)
-        lp_text = self.lp_recognition.rec(lp_image, mode=plate_type)
+        try:
+            car_image = self.car_detection.car_detect(image)
+            lp_image, detection_conf, plate_type = self.lp_detection.detect(car_image, classify=True)
+        except:
+            raise InvalidUsage('can not detect license plate from image', 400)
 
+        try:
+            lp_text = self.lp_recognition.rec(lp_image, mode=plate_type)
+        except:
+            raise InvalidUsage('can not detect license plate from image', 400)
+        
         detection_conf = int(round(detection_conf * 100))
 
         lp_image_path = ''

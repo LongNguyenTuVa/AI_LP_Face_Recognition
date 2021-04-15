@@ -7,7 +7,8 @@ from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 
 from ai.face.face_detection.detect import Detect
-from api.utils import generate_image_file_name, convert_tensor_to_image, convert_embedding_vector_to_string, convert_embedding_string_to_vector
+from api.utils import *
+from api.exceptions import InvalidUsage
 
 db = SQLAlchemy()
 
@@ -31,30 +32,33 @@ class FaceRecognition:
         self.face_dir = os.path.join(data_dir, 'faces')
         self.threshold = threshold
 
-        import shutil
-        shutil.rmtree(self.face_dir)
-
         # create license plate folder
         os.makedirs(self.face_dir, exist_ok=True)
 
+        import shutil
+        shutil.rmtree(self.face_dir)
+
     def recognize(self, image):
         embedding_vectors = self.get_embedding_vectors()
-        face_image_path, embedding_vector, detection_conf = self.calc_embedding(image)
-        if face_image_path is not None and embedding_vector is not None:
+        embedding_result = self.calc_embedding(image)
+        if not embedding_result:
+            raise InvalidUsage('can not detect face from image', 400)
+        (face_image_path, embedding_vector, detection_conf) = embedding_result
+        logging.info(f'detect face with face_image_path: {face_image_path}, detection_conf: {detection_conf}')
 
-            users = []
-            for item in embedding_vectors:
-                user_id = item[0]
-                e = item[1]
-                recognition_distance = self.cosine_similarity(embedding_vector, e)
-                if recognition_distance >= self.threshold:
-                    users.append((user_id, recognition_distance))
+        users = []
+        for item in embedding_vectors:
+            user_id = item[0]
+            e = item[1]
+            recognition_distance = self.cosine_similarity(embedding_vector, e)
+            if recognition_distance >= self.threshold:
+                users.append((user_id, recognition_distance))
 
-            if len(users) != 0: 
-                matched_user = max(users, key=lambda item:item[1])
-                detection_conf = int(round(detection_conf * 100))
-                return face_image_path, matched_user[0], f'{detection_conf}%', "{:.2f}".format(recognition_distance)
-        return None, None, None
+        if len(users) != 0: 
+            matched_user = max(users, key=lambda item:item[1])
+            detection_conf = int(round(detection_conf * 100))
+            return face_image_path, matched_user[0], f'{detection_conf}%', "{:.2f}".format(recognition_distance)
+        return None, None, None, None
 
     def register_face(self, user_id, images):
         users = []
@@ -69,8 +73,8 @@ class FaceRecognition:
         for item in images:
             name = item[0]
             image = item[1]
-            face_image_path, embedding_vector = self.calc_embedding(image)
-            if face_image_path is not None and embedding_vector is not None:
+            face_image_path, embedding_vector, detection_conf = self.calc_embedding(image)
+            if face_image_path is not None and embedding_vector is not None and detection_conf >= 0.7:
                 users.append(User(user_id, convert_embedding_vector_to_string(embedding_vector), face_image_path, registered_date))
 
         db.session.bulk_save_objects(users)
@@ -102,8 +106,8 @@ class FaceRecognition:
 
             # Calculate embedding vector
             embedding_vector = self.face_detection.calc_embedding(face_image)
-            return face_image_path, embedding_vector[0], detection_conf
-        return None, None
+            return (face_image_path, embedding_vector[0], detection_conf)
+        return None
 
     def cosine_similarity(self, a, b):
         return np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b))
