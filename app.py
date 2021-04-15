@@ -5,8 +5,8 @@ from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 
-from api.resources.face_recognition import FaceRecognition
-from api.resources.license_plate_recognition import LPRecognition
+from api.face_recognition import FaceRecognition, db
+from api.license_plate_recognition import LPRecognition
 from api.utils import get_image_from_request
 from api.exceptions import InvalidUsage
 
@@ -15,32 +15,25 @@ logging.config.dictConfig(yaml.load(open('config/logging.conf'), Loader=yaml.Ful
 
 app = Flask(__name__)
 
-import os, sys
-print(sys.path)
-
-# db = SQLAlchemy(app)
-
-# class User(db.Model):
-#     id = db.Column(db.Integer, primary_key=True)
-#     name = db.Column(db.String, unique=True, nullable=False)
-#     email = db.Column(db.String, unique=True, nullable=False)
-
-# db.session.add(User(name="Flask", email="example@example.com"))
-# db.session.commit()
-
-# users = User.query.all()
-# print(users)
-# app.logger.info(users)
-
 app.config.from_envvar('APP_CONFIG_FILE')
 data_dir = app.config['DATA_DIR']
-app.logger.info(f'Server start with data_dir: {data_dir}, db_dir: {app.config["SQLALCHEMY_DATABASE_URI"]}')
+db_dir = app.config['DB_DIR']
+if not os.path.exists(db_dir):
+    os.makedirs(db_dir)
+app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_dir}/flp.sqlite3'
 
-global lp_recognition
+app.logger.info(f'Server start with data_dir: {data_dir}, db_dir: {db_dir}')
+
+db.init_app(app)
+db.app = app
+db.create_all()
+
+global lp_recognition, face_recognition
 lp_recognition = LPRecognition(data_dir)
+face_recognition = FaceRecognition(db_dir)
 
-if __name__ == "__main__":
-    app.run(host="0.0.0.0")
+if __name__ == '__main__':
+    app.run(debug=True)
 
 @app.route('/api/face/recognize', methods=['POST'])
 def recognize_face():
