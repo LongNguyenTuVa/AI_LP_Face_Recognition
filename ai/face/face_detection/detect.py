@@ -4,10 +4,10 @@ from torch.utils.data import DataLoader
 from torchvision import datasets
 import numpy as np
 import os, glob
+import cv2
 
 workers = 0 if os.name == 'nt' else 4
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
-
 
 def collate_fn(x):
     return x[0]
@@ -28,6 +28,17 @@ class Detect:
                 select_largest=True, device=device
             )
         self.embedding_model = InceptionResnetV1(pretrained='vggface2').eval().to(device)
+
+    '''
+    Detect face from image
+    '''
+    def detect(self, image):
+        face_image, prob =  self.detection_model(image, return_prob=True)
+        return face_image, prob
+
+    def calc_embedding(self, face_image):
+        return self.embedding_model(face_image.unsqueeze(0)).detach().cpu().numpy()
+
     def face_detect(self, path, save=False):
         # Load Folder as Dataset
         dataset = datasets.ImageFolder(path)
@@ -54,9 +65,4 @@ class Detect:
         # Save the embeddings
         if save == True:
             save_npy(names, embeddings, face_alligned, path)
-
-
         return face_alligned, names, embeddings, probability_list
-
-    
-        

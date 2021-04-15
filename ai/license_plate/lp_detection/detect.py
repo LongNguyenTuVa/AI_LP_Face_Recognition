@@ -75,7 +75,7 @@ class LP_Detect:
                 self.plate_type = 2
                 plate_image = cv2.resize(plate_image, (220, 200))
 
-        return plate_image
+        return plate_image, self.prob[0], self.plate_type
 
     def get_coord(self):
         return self.coordinate

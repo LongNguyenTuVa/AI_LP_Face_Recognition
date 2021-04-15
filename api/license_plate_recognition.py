@@ -20,17 +20,21 @@ class LPRecognition:
         os.makedirs(self.lp_dir, exist_ok=True)
 
     def recognize(self, image):
+        image_name, suffix_name = generate_image_file_name('lp')
+        cv2.imwrite(os.path.join(self.lp_dir, image_name), cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
+
         # Detect license plate first
         car_image = self.car_detection.car_detect(image)
-        lp_image = self.lp_detection.detect(car_image, classify=True)
-        detect_prob = self.lp_detection.get_prob()
-        plate_type = self.lp_detection.get_plate_type()
+        lp_image, detection_conf, plate_type = self.lp_detection.detect(car_image, classify=True)
         lp_text = self.lp_recognition.rec(lp_image, mode=plate_type)
+
+        detection_conf = int(round(detection_conf * 100))
+
+        lp_image_path = ''
         
         # Save image
         if lp_image is not None:
-            image_name = generate_image_file_name()
-            lp_image_path = os.path.join(self.lp_dir, image_name)
-            cv2.imwrite(lp_image_path, lp_image)
+            lp_image_path = os.path.join(self.lp_dir, suffix_name)
+            cv2.imwrite(os.path.join(self.lp_dir, suffix_name), lp_image)
 
-        return lp_image_path, lp_text, detect_prob
+        return lp_image_path, lp_text, f'{detection_conf}%'
