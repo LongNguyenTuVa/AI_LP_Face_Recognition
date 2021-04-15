@@ -35,8 +35,8 @@ def get_plate(image, wpod_net, Dmax=608, Dmin=256):
     ratio = float(max(vehicle.shape[:2])) / min(vehicle.shape[:2])
     side = int(ratio * Dmin)
     bound_dim = min(side, Dmax)
-    _ , plate_image, _, coordinate = detect_lp(wpod_net, vehicle, bound_dim, lp_threshold=0.5, wh_threshold = 1.3)
-    return plate_image, coordinate
+    _ , plate_image, _, coordinate, prob = detect_lp(wpod_net, vehicle, bound_dim, lp_threshold=0.5, wh_threshold = 1.3)
+    return plate_image, coordinate, prob
 
 class LP_Detect:
     __shared_instance = None
@@ -59,7 +59,7 @@ class LP_Detect:
 
     def detect(self, image, classify=False):
         
-        plate_image,self.coordinate = get_plate(image, self.wpod_net)
+        plate_image, self.coordinate, self.prob = get_plate(image, self.wpod_net)
         plate_image = (255*plate_image[0]).astype(np.uint8)
         if classify:
             plate = cv2.cvtColor(plate_image, cv2.COLOR_BGR2GRAY)
@@ -79,6 +79,9 @@ class LP_Detect:
 
     def get_coord(self):
         return self.coordinate
+
+    def get_prob(self):
+        return self.prob[0]
 
     def get_plate_type(self):
         return self.plate_type

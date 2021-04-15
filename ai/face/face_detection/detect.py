@@ -37,12 +37,14 @@ class Detect:
         # Detect and Allign Faces
         face_alligned = []
         names = []
+        probability_list = []
         for image, number in loader:
             image_alligned, probability = self.detection_model(image, return_prob=True)
             if image_alligned is not None and probability > 0.9:
                 print(dataset.idx_to_class[number] + ' - Detection Probability: {0:.1%}'.format(probability))
                 face_alligned.append(image_alligned)
                 names.append(dataset.idx_to_class[number])
+                probability_list.append(probability)
             else:
                 print(dataset.idx_to_class[number] + " - Fail face detection")
 
@@ -54,7 +56,7 @@ class Detect:
             save_npy(names, embeddings, face_alligned, path)
 
 
-        return face_alligned, names, embeddings
+        return face_alligned, names, embeddings, probability_list
 
     
         

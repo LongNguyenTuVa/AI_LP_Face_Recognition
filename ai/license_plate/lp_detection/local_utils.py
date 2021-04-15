@@ -177,16 +177,18 @@ def reconstruct(I, Iresized, Yr, lp_threshold, wh_threshold):
 
     TLp = []
     Cor = []
+    prob_list = []
     if len(final_labels):
         final_labels.sort(key=lambda x: x.prob(), reverse=True)
-        for _, label in enumerate(final_labels):
+        for i, label in enumerate(final_labels):
             t_ptsh = getRectPts(0, 0, out_size[0], out_size[1])
             ptsh = np.concatenate((label.pts * getWH(I.shape).reshape((2, 1)), np.ones((1, 4))))
             H = find_T_matrix(ptsh, t_ptsh)
             Ilp = cv2.warpPerspective(I, H, out_size, borderValue=0)
             TLp.append(Ilp)
             Cor.append(ptsh)
-    return final_labels, TLp, lp_type, Cor
+            prob_list.append(final_labels[i].prob())
+    return final_labels, TLp, lp_type, Cor, prob_list
 
 def detect_lp(model, I, max_dim, lp_threshold, wh_threshold=1):
     min_dim_img = min(I.shape[:2])
@@ -198,5 +200,5 @@ def detect_lp(model, I, max_dim, lp_threshold, wh_threshold=1):
     Yr = model.predict(T)
     Yr = np.squeeze(Yr)
     #print(Yr.shape)
-    L, TLp, lp_type, Cor = reconstruct(I, Iresized, Yr, lp_threshold, wh_threshold)
-    return L, TLp, lp_type, Cor
+    L, TLp, lp_type, Cor, prob_list = reconstruct(I, Iresized, Yr, lp_threshold, wh_threshold)
+    return L, TLp, lp_type, Cor, prob_list
