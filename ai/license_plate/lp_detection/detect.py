@@ -66,14 +66,16 @@ class LP_Detect:
             plate = cv2.resize(plate, (64, 64))
             plate = np.expand_dims(plate, axis=0)
             result=self.model.predict(plate).squeeze()
-            print(result)
+            # print(result)
 
             if result[0] > result[1]:
                 self.plate_type = 1
                 plate_image = cv2.resize(plate_image, (470, 110))
             else:
                 self.plate_type = 2
-                plate_image = cv2.resize(plate_image, (220, 200))
+                plate_image = cv2.resize(plate_image, (280, 200))
+                plt.imshow(plate_image)
+                plt.show()
 
         return plate_image
 
