@@ -13,14 +13,28 @@ from api.exceptions import InvalidUsage
 os.makedirs('logs', exist_ok=True)
 logging.config.dictConfig(yaml.load(open('config/logging.conf'), Loader=yaml.FullLoader))
 
+# app = Flask(__name__, static_url_path='/data')
 app = Flask(__name__)
 
-app.config.from_envvar('APP_CONFIG_FILE')
+# app.config.from_envvar('APP_CONFIG_FILE')
+
+app.config.update(
+    DATA_DIR='data/images',
+    DB_DIR='data/database',
+    SQLALCHEMY_TRACK_MODIFICATIONS=False,
+    FACE_THRESHOLD=0.8,
+    MIN_IMAGE=3,
+    UPLOAD_FOLDER='data/'
+)
+
 data_dir = app.config['DATA_DIR']
 db_dir = app.config['DB_DIR']
 if not os.path.exists(db_dir):
     os.makedirs(db_dir)
+
 app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_dir}/flp.sqlite3'
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
+app.config['UPLOAD_FOLDER'] = 'data/images'
 
 logging.info(f'Server start with data_dir: {data_dir}, db_dir: {db_dir}')
 
@@ -39,6 +53,10 @@ if __name__ == '__main__':
 # def log_request_info():
 #     app.logger.debug('Headers: %s', request.headers)
 #     # app.logger.debug('Body: %s', request.get_data())
+
+@app.route('/')
+def hello():
+    return 'OK'
 
 @app.route('/api/face/recognize', methods=['POST'])
 def recognize_face():
