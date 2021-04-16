@@ -22,13 +22,13 @@ def main():
     except:
         print("Template Reading Failed")
 
-    try:
+    # try:
         # Detect for Target
-        print("----------------------------------------------------------------")
-        face_target, names_target, embeddings_target, probability = detect.face_detect(target_path)
-        print("----------------------------------------------------------------")
-    except:
-        print("Detection Failed")
+    print("----------------------------------------------------------------")
+    face_target, names_target, embeddings_target, probability = detect.face_detect(target_path)
+    print("----------------------------------------------------------------")
+    # except:
+    #     print("Detection Failed")
 
     try:
         # Recognize + distance compare

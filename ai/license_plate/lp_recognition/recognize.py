@@ -43,15 +43,15 @@ def decode_batch_predictions(pred):
 
     input_len = np.ones(pred.shape[0]) * pred.shape[1]
     # Use greedy search. For complex tasks, you can use beam search
-    results = keras.backend.ctc_decode(pred, input_length=input_len, greedy=True)[0][0][
-        :, :max_length
-    ]
+    results_prob = keras.backend.ctc_decode(pred, input_length=input_len, greedy=True)
+    prob = np.exp(float(-results_prob[1][0][0]))
+    results = results_prob[0][0][:, :max_length]
     # Iterate over the results and get back the text
     output_text = []
     for res in results:
         res = tf.strings.reduce_join(num_to_char(res)).numpy().decode("utf-8")
         output_text.append(res)
-    return output_text
+    return output_text, prob
 
 class CTCLayer(tf.keras.layers.Layer):
     def __init__(self, name=None):
@@ -149,7 +149,7 @@ class LP_Recognize:
         else: 
             # Singleton Pattern Design only instantiate the model once
             self.model = build_model(img_height=self.img_height,img_width=self.img_width)
-            self.model.load_weights('ai/license_plate/models/CV_together_Weight.h5')
+            self.model.load_weights('ai/license_plate/models/CV_together293039_Weight.h5')
             self.model = keras.models.Model(
                 self.model.get_layer(name="image").input, self.model.get_layer(name="dense2").output
             )     
@@ -157,18 +157,20 @@ class LP_Recognize:
 
     def rec(self, image, mode = 1):
         if mode == 1:
-            t = self.preprocess_predict_image(image)
-            return t
+            t, recognize_prob = self.preprocess_predict_image(image)
+            return t, recognize_prob
         else:
             t = ""
             image1 = image[:int(image.shape[0]*11/20),:]
-            t1 = self.preprocess_predict_image(image1)
+            t1, recognize_prob1 = self.preprocess_predict_image(image1)
             image2 = image[int(image.shape[0]*9/20):,:]
-            t2 = self.preprocess_predict_image(image2)
+            t2, recognize_prob2 = self.preprocess_predict_image(image2)
+            recognize_prob = recognize_prob1*recognize_prob2
             t = (t1 + t2).replace("*", "")
+
             while len(t) != 8:
                 t += "*"
-            return t
+            return t, recognize_prob
 
     def preprocess_predict_image(self, image):
         image = cv2.cvtColor(image,cv2.COLOR_BGR2GRAY)
@@ -176,8 +178,7 @@ class LP_Recognize:
         crop = np.expand_dims(crop.astype('float32') / 255, axis = -1)
         crop = np.expand_dims(crop, axis = 0)
         preds = self.model.predict(crop)
-        print(preds.squeeze().shape)
-        t = decode_batch_predictions(preds)
+        t, recognize_prob = decode_batch_predictions(preds)
         t = t[0].replace("[UNK]", "*")
-        return t
+        return t, recognize_prob
 
