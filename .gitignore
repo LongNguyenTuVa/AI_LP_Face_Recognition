@@ -141,7 +141,11 @@ cython_debug/
 ai/license_plate/data/
 ai/face/data/
 data/
+static/
 test.py
 
 # log
 logs
+
+# model
+yolov5s.pt

@@ -77,7 +77,7 @@ class LP_Detect:
                 plt.imshow(plate_image)
                 plt.show()
 
-        return plate_image
+        return plate_image, self.prob[0], self.plate_type
 
     def get_coord(self):
         return self.coordinate
