@@ -1,6 +1,3 @@
-from PIL import Image
-from datetime import datetime
-
 import string
 import random
 import io
@@ -47,15 +44,22 @@ def generate_image_file_name(suffix):
     id_str = id_generator()
     return f'{time_str}_{id_str}.jpg', f'{time_str}_{id_str}_{suffix}.jpg'
 
+<<<<<<< HEAD
 def validate_request_with_image_list(request, min_file=1, max_file=10):
+=======
+def validate_request_with_image_list(request, min_file=1):
+>>>>>>> 3ce84c0e1eb3019977a2deac6dce20b14e85b6a7
     if not request.files.get('images'):
         return '[images] field can not empty'
     
     image_list = request.files.getlist('images')
     if len(image_list) < min_file:
         return f'register new face with at least {min_file} images'
+<<<<<<< HEAD
     elif len(image_list) > max_file:
         return f'register new face with less than {max_file} images'
+=======
+>>>>>>> 3ce84c0e1eb3019977a2deac6dce20b14e85b6a7
     
     for f in image_list:
         filename = f.filename

@@ -100,14 +100,21 @@ def recognize_lp():
     except:
         raise InvalidUsage('read image error', 400)
 
+<<<<<<< HEAD
     lp_image_path, lp_text, detection_conf, recognition_conf = lp_recognition.recognize(image)
     return jsonify(
         text=lp_text,
         detection_conf=detection_conf,
         recognition_conf=recognition_conf,
+=======
+    lp_image_path, lp_text, detection_conf = lp_recognition.recognize(image)
+    return jsonify(
+        text=lp_text,
+        detection_conf=detection_conf,
+        recognition_conf=0,
+>>>>>>> 3ce84c0e1eb3019977a2deac6dce20b14e85b6a7
         image_path=lp_image_path
     )
-    return "OK"
 
 @app.errorhandler(InvalidUsage)
 def handle_invalid_usage(error):

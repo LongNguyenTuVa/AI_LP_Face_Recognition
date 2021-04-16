@@ -4,10 +4,10 @@ from torch.utils.data import DataLoader
 from torchvision import datasets
 import numpy as np
 import os, glob
+import cv2
 
 workers = 0 if os.name == 'nt' else 4
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
-
 
 def collate_fn(x):
     return x[0]
@@ -35,6 +35,7 @@ class Detect:
     Detect face from image
     '''
     def detect(self, image):
+<<<<<<< HEAD
         image_alligned, prob =  self.detection_model(image, return_prob=True)
 
         if image_alligned is not None:
@@ -50,6 +51,10 @@ class Detect:
             return (image_alligned, image_alligned, prob)
             
         return None
+=======
+        face_image, prob =  self.detection_model(image, return_prob=True)
+        return face_image, prob
+>>>>>>> 3ce84c0e1eb3019977a2deac6dce20b14e85b6a7
 
     def calc_embedding(self, face_image):
         return self.embedding_model(face_image.unsqueeze(0)).detach().cpu().numpy()
@@ -92,9 +97,13 @@ class Detect:
         # Save the embeddings
         if save == True:
             save_npy(names, embeddings, face_alligned, path)
+<<<<<<< HEAD
 
 
         return face_alligned, names, embeddings, probability_list, face_original
 
     
         
+=======
+        return face_alligned, names, embeddings, probability_list
+>>>>>>> 3ce84c0e1eb3019977a2deac6dce20b14e85b6a7
