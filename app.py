@@ -100,11 +100,11 @@ def recognize_lp():
     except:
         raise InvalidUsage('read image error', 400)
 
-    lp_image_path, lp_text, detection_conf = lp_recognition.recognize(image)
+    lp_image_path, lp_text, detection_conf, recognition_conf = lp_recognition.recognize(image)
     return jsonify(
         text=lp_text,
         detection_conf=detection_conf,
-        recognition_conf=0,
+        recognition_conf=recognition_conf,
         image_path=lp_image_path
     )
 

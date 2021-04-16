@@ -58,7 +58,7 @@ class FaceRecognition:
         if len(users) != 0: 
             matched_user = max(users, key=lambda item:item[1])
             detection_conf = int(round(detection_conf * 100))
-            return face_image_path, matched_user[0], f'{detection_conf}%', "{:.2f}".format(recognition_distance)
+            return face_image_path, matched_user[0], f'{detection_conf}%', "{:.2f}".format(matched_user[1])
         else:
             raise InvalidUsage('user not found', 400)
 
@@ -100,6 +100,15 @@ class FaceRecognition:
         return user_id
 
     def save_user_to_database(self, users):
+        # Get all users from database
+        old_users = User.query.all()
+
+        # Only keep 10 images
+        if len(old_users) + len(users) > 10:
+            # Delete old user
+            index = 10 - len(users)
+            users.extend(old_users[index:])
+
         db.session.bulk_save_objects(users)
         db.session.commit()
 
@@ -120,19 +129,21 @@ class FaceRecognition:
         cv2.imwrite(image_path, cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
         logging.info(f'save image: {image_path}')
 
-        face_image, detection_conf = self.face_detection.detect(image)
-        logging.info(f'image: {image_path} face detection confident: {detection_conf}')
+        face_result = self.face_detection.detect(image)
+        if face_result:
+            (face_image, original_face_image, detection_conf) = face_result
+            logging.info(f'image: {image_path} face detection confident: {detection_conf}')
 
-        if face_image is not None and detection_conf > 0.8:
             face_image_path = os.path.join(self.face_dir, suffix_name)
             logging.info(f'save face image: {face_image_path}')
-            cv2.imwrite(face_image_path, convert_tensor_to_image(face_image))
+            cv2.imwrite(face_image_path, convert_tensor_to_image(original_face_image))
 
             # Calculate embedding vector
             embedding_vector = self.face_detection.calc_embedding(face_image)
             return (face_image_path, embedding_vector[0], detection_conf)
-        logging.info(f'image: {image_path} can not detect face')
-        return None
+        else:
+            logging.info(f'image: {image_path} can not detect face')
+            return None
 
     def cosine_similarity(self, a, b):
         return np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b))

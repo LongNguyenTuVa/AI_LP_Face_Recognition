@@ -1,6 +1,7 @@
 
 import os, sys
 import cv2
+import logging
 
 from ai.license_plate.lp_detection.detect import LP_Detect
 from ai.license_plate.lp_recognition.recognize import LP_Recognize
@@ -22,21 +23,28 @@ class LPRecognition:
 
     def recognize(self, image):
         image_name, suffix_name = generate_image_file_name('lp')
-        cv2.imwrite(os.path.join(self.lp_dir, image_name), cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
+        image_path = os.path.join(self.lp_dir, image_name)
+        cv2.imwrite(image_path, cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
+        logging.info(f'save image: {image_path}')
 
         # Detect license plate first
+        detection_conf = 0
         try:
             car_image = self.car_detection.car_detect(image)
             lp_image, detection_conf, plate_type = self.lp_detection.detect(car_image, classify=True)
+            logging.info(f'image: {image_path} license plate detection confident: {detection_conf}')
         except:
             raise InvalidUsage('can not detect license plate from image', 400)
 
+        recognition_conf = 0
         try:
-            lp_text = self.lp_recognition.rec(lp_image, mode=plate_type)
+            lp_text, recognition_conf = self.lp_recognition.rec(lp_image, mode=plate_type)
+            logging.info(f'image: {image_path} license plate recognition confident: {recognition_conf}')
         except:
-            raise InvalidUsage('can not detect license plate from image', 400)
+            raise InvalidUsage('can not recognize license plate from image', 400)
         
         detection_conf = int(round(detection_conf * 100))
+        recognition_conf = int(round(recognition_conf * 100))
 
         lp_image_path = ''
         
@@ -45,4 +53,4 @@ class LPRecognition:
             lp_image_path = os.path.join(self.lp_dir, suffix_name)
             cv2.imwrite(os.path.join(self.lp_dir, suffix_name), lp_image)
 
-        return lp_image_path, lp_text, f'{detection_conf}%'
+        return lp_image_path, lp_text, f'{detection_conf}%', f'{recognition_conf}%'

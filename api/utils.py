@@ -44,13 +44,15 @@ def generate_image_file_name(suffix):
     id_str = id_generator()
     return f'{time_str}_{id_str}.jpg', f'{time_str}_{id_str}_{suffix}.jpg'
 
-def validate_request_with_image_list(request, min_file=1):
+def validate_request_with_image_list(request, min_file=1, max_file=10):
     if not request.files.get('images'):
         return '[images] field can not empty'
     
     image_list = request.files.getlist('images')
     if len(image_list) < min_file:
         return f'register new face with at least {min_file} images'
+    elif len(image_list) > max_file:
+        return f'register new face with less than {max_file} images'
     
     for f in image_list:
         filename = f.filename

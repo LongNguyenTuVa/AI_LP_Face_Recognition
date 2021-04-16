@@ -8,7 +8,6 @@ import os, glob
 workers = 0 if os.name == 'nt' else 4
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
-
 def collate_fn(x):
     return x[0]
 def max_area(box):
@@ -35,8 +34,21 @@ class Detect:
     Detect face from image
     '''
     def detect(self, image):
-        face_image, prob =  self.detection_model(image, return_prob=True)
-        return face_image, prob
+        image_alligned, prob =  self.detection_model(image, return_prob=True)
+
+        if image_alligned is not None:
+            # boxes, probs = self.detection_model.detect(x)
+            # boxes = boxes.squeeze()
+
+            # # Draw boxes and save faces
+            # orginal_image = np.asarray(x)
+            # if type(boxes[0]) is np.ndarray:
+            #     box_sort = sorted(boxes, key=max_area)
+            #     boxes = box_sort[0]      
+            # face_image = orginal_image[boxes[1]:boxes[3],boxes[0]:boxes[2]]
+            return (image_alligned, image_alligned, prob)
+            
+        return None
 
     def calc_embedding(self, face_image):
         return self.embedding_model(face_image.unsqueeze(0)).detach().cpu().numpy()
