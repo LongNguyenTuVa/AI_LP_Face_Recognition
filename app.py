@@ -13,18 +13,15 @@ from api.exceptions import InvalidUsage
 os.makedirs('logs', exist_ok=True)
 logging.config.dictConfig(yaml.load(open('config/logging.conf'), Loader=yaml.FullLoader))
 
-# app = Flask(__name__, static_url_path='/data')
 app = Flask(__name__)
 
-# app.config.from_envvar('APP_CONFIG_FILE')
-
 app.config.update(
-    DATA_DIR='data/images',
+    DATA_DIR='static/images',
     DB_DIR='data/database',
     SQLALCHEMY_TRACK_MODIFICATIONS=False,
     FACE_THRESHOLD=0.8,
     MIN_IMAGE=3,
-    UPLOAD_FOLDER='data/'
+    UPLOAD_FOLDER='static/'
 )
 
 data_dir = app.config['DATA_DIR']
@@ -34,7 +31,7 @@ if not os.path.exists(db_dir):
 
 app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_dir}/flp.sqlite3'
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
-app.config['UPLOAD_FOLDER'] = 'data/images'
+app.config['UPLOAD_FOLDER'] = 'static/'
 
 logging.info(f'Server start with data_dir: {data_dir}, db_dir: {db_dir}')
 
