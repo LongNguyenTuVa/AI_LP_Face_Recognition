@@ -146,3 +146,6 @@ test.py
 
 # log
 logs
+
+# model
+yolov5s.pt

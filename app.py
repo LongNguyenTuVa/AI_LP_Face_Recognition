@@ -19,7 +19,7 @@ app.config.update(
     DATA_DIR='static/images',
     DB_DIR='data/database',
     SQLALCHEMY_TRACK_MODIFICATIONS=False,
-    FACE_THRESHOLD=0.8,
+    FACE_SIMILARITY_THRESHOLD=0.7,
     MIN_IMAGE=3,
     UPLOAD_FOLDER='static/'
 )
@@ -41,15 +41,10 @@ db.create_all()
 
 global lp_recognition, face_recognition
 lp_recognition = LPRecognition(data_dir)
-face_recognition = FaceRecognition(data_dir, app.config['FACE_THRESHOLD'])
+face_recognition = FaceRecognition(data_dir, app.config['FACE_SIMILARITY_THRESHOLD'], app.config['MIN_IMAGE'])
 
 if __name__ == '__main__':
-    app.run(debug=True)
-
-# @app.before_request
-# def log_request_info():
-#     app.logger.debug('Headers: %s', request.headers)
-#     # app.logger.debug('Body: %s', request.get_data())
+    app.run()
 
 @app.route('/')
 def hello():
@@ -76,19 +71,24 @@ def recognize_face():
 
 @app.route('/api/face/register', methods=['POST'])
 def register_face():
-    error = validate_request_with_image_list(request, app.config['MIN_IMAGE'])
+    user_id = request.form.get('user_id')
+    if user_id:
+        error = validate_request_with_image_list(request)
+    else:
+        error = validate_request_with_image_list(request, app.config['MIN_IMAGE'])
+
     if error:
         raise InvalidUsage(error, 400)
-
     try:
         images = get_image_list_from_request(request)
     except:
         raise InvalidUsage('read image error', 400)
 
-    user_id = request.form.get('user_id')
     user_id = face_recognition.register_face(user_id, images)
 
-    return str(user_id)
+    return jsonify(
+        user_id=str(user_id)
+    )
 
 @app.route('/api/license_plate/recognize', methods=['POST'])
 def recognize_lp():
