@@ -1,6 +1,7 @@
 import logging, logging.config, yaml
 import os
 import markdown
+import time
 
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
@@ -53,6 +54,7 @@ def api_doc():
 
 @app.route('/api/face/recognize', methods=['POST'])
 def recognize_face():
+    start = time.time()
     error = validate_request_with_image(request)
     if error:
         raise InvalidUsage(error, 400)
@@ -63,6 +65,8 @@ def recognize_face():
         raise InvalidUsage('read image error', 400)
 
     face_image_path, user_id, detection_conf, recognition_distance = face_recognition.recognize(image)
+    end = time.time()
+    logging.info(f'request processed with time: {end - start}')
     return jsonify(
         user_id=user_id,
         detection_conf=detection_conf,
@@ -72,6 +76,7 @@ def recognize_face():
 
 @app.route('/api/face/register', methods=['POST'])
 def register_face():
+    start = time.time()
     user_id = request.form.get('user_id')
     if user_id:
         error = validate_request_with_image_list(request)
@@ -87,12 +92,16 @@ def register_face():
 
     user_id = face_recognition.register_face(user_id, images)
 
+    end = time.time()
+    logging.info(f'request processed with time: {end - start}')
+
     return jsonify(
         user_id=str(user_id)
     )
 
 @app.route('/api/license_plate/recognize', methods=['POST'])
 def recognize_lp():
+    start = time.time()
     error = validate_request_with_image(request)
     if error:
         raise InvalidUsage(error, 400)
@@ -102,6 +111,8 @@ def recognize_lp():
         raise InvalidUsage('read image error', 400)
 
     lp_image_path, lp_text, detection_conf, recognition_conf = lp_recognition.recognize(image)
+    end = time.time()
+    logging.info(f'request processed with time: {end - start}')
     return jsonify(
         text=lp_text,
         detection_conf=detection_conf,
