@@ -158,7 +158,6 @@ class LP_Recognize:
     def rec(self, image, mode = 1):
         if mode == 1:
             t, recognize_prob = self.preprocess_predict_image(image)
-            return t, recognize_prob
         else:
             t = ""
             image1 = image[:int(image.shape[0]*11/20),:]
@@ -168,9 +167,13 @@ class LP_Recognize:
             recognize_prob = recognize_prob1*recognize_prob2
             t = (t1 + t2).replace("*", "")
 
-            while len(t) != 8:
-                t += "*"
-            return t, recognize_prob
+            # while len(t) != 8:
+            #     t += "*"
+        if len(t) == 8:
+            t = t[:6] + "." + t[6:]
+        t = t[:3] + "-" + t[3:]
+
+        return t, recognize_prob
 
     def preprocess_predict_image(self, image):
         image = cv2.cvtColor(image,cv2.COLOR_BGR2GRAY)
@@ -179,6 +182,7 @@ class LP_Recognize:
         crop = np.expand_dims(crop, axis = 0)
         preds = self.model.predict(crop)
         t, recognize_prob = decode_batch_predictions(preds)
-        t = t[0].replace("[UNK]", "*")
+        t = t[0].replace("[UNK]", "")
+        t = t.replace("*", "")
         return t, recognize_prob
 
