@@ -100,14 +100,14 @@ class FaceRecognition:
         return user_id
 
     def save_user_to_database(self, users):
-        # Get all users from database
-        old_users = User.query.all()
+        # # Get all users from database
+        # old_users = User.query.all()
 
-        # Only keep 10 images
-        if len(old_users) + len(users) > 10:
-            # Delete old user
-            index = 10 - len(users)
-            users.extend(old_users[index:])
+        # # Only keep 10 images
+        # if len(old_users) + len(users) > 10:
+        #     # Delete old user
+        #     index = 10 - len(users)
+        #     users.extend(old_users[index:])
 
         db.session.bulk_save_objects(users)
         db.session.commit()
