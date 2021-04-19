@@ -1,8 +1,7 @@
-FROM python:3.8-slim-buster
+FROM tensorflow/tensorflow:2.4.1-gpu
 
 RUN apt-get update
 RUN apt-get install ffmpeg libsm6 libxext6  -y
-RUN apt install nvidia-cuda-toolkit
 
 WORKDIR /app
 
