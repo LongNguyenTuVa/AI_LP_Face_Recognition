@@ -17,6 +17,14 @@ logging.config.dictConfig(yaml.load(open('config/logging.conf'), Loader=yaml.Ful
 
 app = Flask(__name__)
 
+import tensorflow as tf
+gpus = tf.config.list_physical_devices('GPU')
+print('--------------------------------------------------------')
+print(tf.__version__)
+for gpu in gpus:
+    print("Name:", gpu.name, "  Type:", gpu.device_type)
+print('--------------------------------------------------------')
+
 app.config.update(
     DATA_DIR='static/images',
     DB_DIR='data/database',
