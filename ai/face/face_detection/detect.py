@@ -45,7 +45,7 @@ class Detect:
             orginal_image = np.asarray(image)
             if type(boxes[0]) is np.ndarray:
                 box_sort = sorted(boxes, key=max_area)
-                boxes = box_sort[0]     
+                boxes = box_sort[-1]
             face_image = orginal_image[int(boxes[1]):int(boxes[3]),int(boxes[0]):int(boxes[2])]
             return (image_alligned, face_image, prob)
             
