@@ -1,5 +1,6 @@
 import logging, logging.config, yaml
 import os
+import markdown
 
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
@@ -46,9 +47,9 @@ face_recognition = FaceRecognition(data_dir, app.config['FACE_SIMILARITY_THRESHO
 if __name__ == '__main__':
     app.run()
 
-@app.route('/')
-def hello():
-    return 'OK'
+@app.route('/api/docs')
+def api_doc():
+    return app.send_static_file('api_doc.html')
 
 @app.route('/api/face/recognize', methods=['POST'])
 def recognize_face():
