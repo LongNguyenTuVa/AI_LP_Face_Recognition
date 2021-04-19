@@ -69,10 +69,10 @@ class Detect:
             image_alligned, probability = self.detection_model(image, return_prob=True)
 
             if image_alligned is not None and probability > 0.9:
-                boxes, probs = self.detection_model.detect(x)
+                boxes, probs = self.detection_model.detect(image)
                 boxes = boxes.squeeze()
                 # Draw boxes and save faces
-                orginal_image = np.asarray(x)
+                orginal_image = np.asarray(image)
                 if type(boxes[0]) is np.ndarray:
                     box_sort = sorted(boxes, key=max_area)
                     boxes = box_sort[0]      
