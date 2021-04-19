@@ -136,7 +136,11 @@ class FaceRecognition:
 
             face_image_path = os.path.join(self.face_dir, suffix_name)
             logging.info(f'save face image: {face_image_path}')
-            cv2.imwrite(face_image_path, convert_tensor_to_image(original_face_image))
+            # cv2.imwrite(face_image_path, convert_tensor_to_image(original_face_image))
+            # original_face_image = cv2.cvtColor(original_face_image, cv2.COLOR_BGR2RGB)
+            # cv2.imwrite(face_image_path, original_face_image)
+
+            cv2.imwrite(face_image_path, convert_tensor_to_image(face_image))
 
             # Calculate embedding vector
             embedding_vector = self.face_detection.calc_embedding(face_image)

@@ -107,7 +107,6 @@ def recognize_lp():
         recognition_conf=recognition_conf,
         image_path=lp_image_path
     )
-    return "OK"
 
 @app.errorhandler(InvalidUsage)
 def handle_invalid_usage(error):

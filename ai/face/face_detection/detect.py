@@ -38,16 +38,16 @@ class Detect:
         image_alligned, prob =  self.detection_model(image, return_prob=True)
 
         if image_alligned is not None:
-            # boxes, probs = self.detection_model.detect(x)
-            # boxes = boxes.squeeze()
+            boxes, probs = self.detection_model.detect(image)
+            boxes = boxes.squeeze()
 
-            # # Draw boxes and save faces
-            # orginal_image = np.asarray(x)
-            # if type(boxes[0]) is np.ndarray:
-            #     box_sort = sorted(boxes, key=max_area)
-            #     boxes = box_sort[0]      
-            # face_image = orginal_image[boxes[1]:boxes[3],boxes[0]:boxes[2]]
-            return (image_alligned, image_alligned, prob)
+            # Draw boxes and save faces
+            orginal_image = np.asarray(image)
+            if type(boxes[0]) is np.ndarray:
+                box_sort = sorted(boxes, key=max_area)
+                boxes = box_sort[0]     
+            face_image = orginal_image[int(boxes[1]):int(boxes[3]),int(boxes[0]):int(boxes[2])]
+            return (image_alligned, face_image, prob)
             
         return None
 
