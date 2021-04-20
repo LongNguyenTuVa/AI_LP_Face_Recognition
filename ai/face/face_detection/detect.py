@@ -53,7 +53,7 @@ class Detect:
     def calc_embedding(self, face_image):
         # face_image = torch.stack(face_image).to(device)
         embeddings = self.embedding_model(face_image.unsqueeze(0).to(device)).detach().cpu()
-        return embeddings
+        return embeddings.numpy()
 
     def face_detect(self, path, save=False):
         # Load Folder as Dataset
