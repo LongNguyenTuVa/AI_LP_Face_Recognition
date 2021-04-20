@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import torch
 from ai.license_plate.models.experimental import attempt_load
-import os
+import os, logging
 from ai.license_plate.utils.general import  non_max_suppression,  \
     scale_coords, xyxy2xywh,  increment_path
 
@@ -59,6 +59,7 @@ class CarDetection:  # for inference
             # Singleton Pattern Design only instantiate the model once
             import sys
             sys.path.append(os.path.join(os.path.dirname(__file__), '../'))
+            logging.info('PyTorch - Load car detection model')
             self.model = attempt_load('yolov5s.pt', map_location=self.device)   
             CarDetection.__shared_instance = self
         

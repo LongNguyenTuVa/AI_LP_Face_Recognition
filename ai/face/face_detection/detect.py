@@ -3,9 +3,9 @@ import torch
 from torch.utils.data import DataLoader
 from torchvision import datasets
 import numpy as np
-import os, glob
+import os, glob, logging
 
-workers = 0 if os.name == 'nt' else 1
+workers = 0 if os.name == 'nt' else 4
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
 def collate_fn(x):
@@ -21,12 +21,13 @@ def save_npy(names, embeddings, face_alligned, path):
 
 class Detect:
     def __init__(self):
-        # save_path='single_image.jpg'
+        logging.info('PyTorch - Load face detection model')
         self.detection_model = MTCNN(
                 image_size=160, margin=0, min_face_size=20, keep_all=False,
                 thresholds=[0.6, 0.7, 0.7], factor=0.709, post_process=True,
                 select_largest=True, device=device
             )
+        logging.info('PyTorch - Load face embedding model')
         self.embedding_model = InceptionResnetV1(pretrained='vggface2').eval().to(device)
 
     '''

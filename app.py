@@ -18,12 +18,9 @@ logging.config.dictConfig(yaml.load(open('config/logging.conf'), Loader=yaml.Ful
 app = Flask(__name__)
 
 import tensorflow as tf
-gpus = tf.config.list_physical_devices('GPU')
-print('--------------------------------------------------------')
-print(tf.__version__)
+gpus = tf.config.experimental.list_physical_devices('GPU')
 for gpu in gpus:
-    print("Name:", gpu.name, "  Type:", gpu.device_type)
-print('--------------------------------------------------------')
+  tf.config.experimental.set_memory_growth(gpu, True)
 
 app.config.update(
     DATA_DIR='static/images',
