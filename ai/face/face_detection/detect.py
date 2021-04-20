@@ -5,7 +5,7 @@ from torchvision import datasets
 import numpy as np
 import os, glob
 
-workers = 0 if os.name == 'nt' else 2
+workers = 0 if os.name == 'nt' else 1
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
 def collate_fn(x):
