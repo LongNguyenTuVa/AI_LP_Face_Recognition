@@ -5,9 +5,8 @@ from torchvision import datasets
 import numpy as np
 import os, glob
 
-workers = 0 if os.name == 'nt' else 4
+workers = 0 if os.name == 'nt' else 2
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
-
 
 def collate_fn(x):
     return x[0]
@@ -19,7 +18,6 @@ def save_npy(names, embeddings, face_alligned, path):
             "Embeddings": embeddings.tolist(),
             "Faces": face_alligned.tolist()}
     np.save(path + "/" + 'data.npy', data)
-
 
 class Detect:
     def __init__(self):
