@@ -1,6 +1,7 @@
 import os
 import cv2
 import logging
+import time
 import numpy as np
 
 from flask_sqlalchemy import SQLAlchemy
@@ -25,6 +26,9 @@ class User(db.Model):
         self.face_image_path = face_image_path
         self.registered_date = registered_date
 
+    def __repr__(self):
+        return f'{self.user_id}, {self.registered_date}'
+
 class FaceRecognition:
     def __init__(self, data_dir, threshold, min_image):
         self.face_detection = Detect()
@@ -35,9 +39,6 @@ class FaceRecognition:
 
         # create license plate folder
         os.makedirs(self.face_dir, exist_ok=True)
-
-        # import shutil
-        # shutil.rmtree(self.face_dir)
 
     def recognize(self, image):
         embedding_vectors = self.get_embedding_vectors()
@@ -62,54 +63,33 @@ class FaceRecognition:
         else:
             raise InvalidUsage('user not found', 400)
 
-    def register_face(self, user_id, images):
-        error_images = []
-
-        register_new = False
-
-        logging.info(f'register new images for user: {user_id}')
-        users = []
+    def register_face(self, user_id, image):
         if not user_id:
             user_id = self.get_user_id()
-            register_new = True
-            logging.info(f'Register a new user')
+            logging.info(f'Register a new user wit user_id: {user_id}')
         else:
             logging.info(f'Register new images for existed user: {user_id}')
         
         registered_date = datetime.now()
+        embedding_result = self.calc_embedding(image)
+        if not embedding_result:
+            raise InvalidUsage('can not detect face from image', 400)
+        (face_image_path, embedding_vector, detection_conf) = embedding_result
 
-        for item in images:
-            name = item[0]
-            image = item[1]
+        user = User(user_id, convert_embedding_vector_to_string(embedding_vector), face_image_path, registered_date)
+        
+        self.save_user_to_database(user_id, user)
 
-            embedding_result = self.calc_embedding(image)
-            if not embedding_result:
-                error_images.append(name)
-            else:
-                (face_image_path, embedding_vector, _) = embedding_result
-                users.append(User(user_id, convert_embedding_vector_to_string(embedding_vector), face_image_path, registered_date))
-
-        error_message = ', '.join(error_images)
-        if not register_new and len(users) == 0:
-            raise InvalidUsage(f"registering new image for existed user with user_id: {user_id} requires at least 1 image containing user's face. Only {len(users)} images contain the user's face, please re-register image {error_message} with another image.")
-            
-        if register_new and len(users) < self.min_image:
-            raise InvalidUsage(f"registering new user requires at least {self.min_image} images containing user's face. Only {len(users)} images contain the user's face, please re-register image {error_message} with another image.")
-
-        self.save_user_to_database(users)
         return user_id
 
-    def save_user_to_database(self, users):
-        # # Get all users from database
-        # old_users = User.query.all()
+    def save_user_to_database(self, user_id, user):
+        current_users = User.query.filter(User.user_id==user_id).order_by(User.registered_date).all()
 
-        # # Only keep 10 images
-        # if len(old_users) + len(users) > 10:
-        #     # Delete old user
-        #     index = 10 - len(users)
-        #     users.extend(old_users[index:])
-
-        db.session.bulk_save_objects(users)
+        if len(current_users) >= 10:
+            oldest_user = current_users[0]
+            db.session.delete(oldest_user)
+      
+        db.session.add(user)
         db.session.commit()
 
     def get_user_id(self):
@@ -129,21 +109,25 @@ class FaceRecognition:
         cv2.imwrite(image_path, cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
         logging.info(f'save image: {image_path}')
 
+        start = time.time()
         face_result = self.face_detection.detect(image)
+        logging.info(f'face detection: {time.time() - start}s')
+
         if face_result:
             (face_image, original_face_image, detection_conf) = face_result
             logging.info(f'image: {image_path} face detection confident: {detection_conf}')
 
             face_image_path = os.path.join(self.face_dir, suffix_name)
             logging.info(f'save face image: {face_image_path}')
-            # cv2.imwrite(face_image_path, convert_tensor_to_image(original_face_image))
-            # original_face_image = cv2.cvtColor(original_face_image, cv2.COLOR_BGR2RGB)
-            # cv2.imwrite(face_image_path, original_face_image)
 
-            cv2.imwrite(face_image_path, convert_tensor_to_image(face_image))
+            original_face_image = cv2.cvtColor(original_face_image, cv2.COLOR_BGR2RGB)
+            cv2.imwrite(face_image_path, original_face_image)
 
             # Calculate embedding vector
+            start = time.time()
             embedding_vector = self.face_detection.calc_embedding(face_image)
+            logging.info(f'calculate embedding vector: {time.time() - start}s')
+            
             return (face_image_path, embedding_vector[0], detection_conf)
         else:
             logging.info(f'image: {image_path} can not detect face')
@@ -151,5 +135,3 @@ class FaceRecognition:
 
     def cosine_similarity(self, a, b):
         return np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b))
-
-        

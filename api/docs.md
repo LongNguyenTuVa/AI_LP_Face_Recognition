@@ -1,7 +1,7 @@
 ## Facial & License Plate Recognition API Docs
 ### 1. Recognize a License Plate
 Recognize license plate from input image, return the text on the plate, the plate image and the confidents
-**URL** : `/api/license_plate/recognize`
+**URL** : `http://sso.d2s.com.vn:5000/api/license_plate/recognize`
 **Method** : `POST` (multipart/form-data)
 **Body** :
 > *key* : `image` (not null & only accept PNG, JPG, JPEG)
@@ -35,11 +35,11 @@ Recognize license plate from input image, return the text on the plate, the plat
 ```
 ### 2. Register a new Driver
 Recognize a new driver or update the image for the existing driver
-**URL** : `api/face/register`
+**URL** : `http://sso.d2s.com.vn:5000/api/face/register`
 **Method** : `POST` (multipart/form-data)
 **Body** :
 > user_id : `int` optional (If user_id is null, new user will be registered. If user_id is not null, the current user with this id will be updated)
-> key : `images` (array of image, not null & only accept PNG, JPG, JPEG). In case register new user, this is required at least 3 images
+> *key* : `image` (not null & only accept PNG, JPG, JPEG)
 #### **Success Response**
 **Code** : `200 OK`
 **Content example**
@@ -49,34 +49,25 @@ Recognize a new driver or update the image for the existing driver
 }
 ```
 #### Error Response
-**Condition** : If `images` key is null
+**Condition** : If `image` key is null
 **Code** : `400 BAD REQUEST`
 **Content** :
 ```json
 {
-    "error": "[images] field can not empty"
+    "error": "[image] field can not empty"
 }
 ```
-**Condition** : If register a new user with less than 3 images
+**Condition** : If can not detect face from input image
 **Code** : `400 BAD REQUEST`
 **Content** :
 ```json
 {
-    "error": "register new face with at least 3 images"
-}
-```
-```
-**Condition** : If there is a problem with detect face from some images
-**Code** : `400 BAD REQUEST`
-**Content** :
-```json
-{
-    "error": "registering new user requires at least 3 images containing user's face. Only 2 images contain the user's face, please re-register image image1.jpg with another image."
+    "error": "can not detect face from image"
 }
 ```
 ### 3. Recognize a Driver
 Recognize drive from input image, return the driver_id, the driver face image and the confidents
-**URL** : `api/face/recognize`
+**URL** : `http://sso.d2s.com.vn:5000/api/face/recognize`
 **Method** : `POST` (multipart/form-data)
 **Body** :
 > *key* : `image` (not null & only accept PNG, JPG, JPEG)

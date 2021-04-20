@@ -2,6 +2,7 @@
 import os, sys
 import cv2
 import logging
+import time
 
 from ai.license_plate.lp_detection.detect import LP_Detect
 from ai.license_plate.lp_recognition.recognize import LP_Recognize
@@ -30,15 +31,24 @@ class LPRecognition:
         # Detect license plate first
         detection_conf = 0
         try:
+            start = time.time()
             car_image = self.car_detection.car_detect(image)
+            logging.info(f'detect car: {time.time() - start}s')
+
+            start = time.time()
             lp_image, detection_conf, plate_type = self.lp_detection.detect(car_image, classify=True)
+            logging.info(f'detect license plate: {time.time() - start}s')
+
             logging.info(f'image: {image_path} license plate detection confident: {detection_conf}')
         except:
             raise InvalidUsage('can not detect license plate from image', 400)
 
         recognition_conf = 0
         try:
+            start = time.time()
             lp_text, recognition_conf = self.lp_recognition.rec(lp_image, mode=plate_type)
+            logging.info(f'recognize license plate: {time.time() - start}s')
+
             logging.info(f'image: {image_path} license plate recognition confident: {recognition_conf}')
         except:
             raise InvalidUsage('can not recognize license plate from image', 400)

@@ -86,19 +86,17 @@ def recognize_face():
 def register_face():
     start = time.time()
     user_id = request.form.get('user_id')
-    if user_id:
-        error = validate_request_with_image_list(request)
-    else:
-        error = validate_request_with_image_list(request, app.config['MIN_IMAGE'])
 
+    error = validate_request_with_image(request)
     if error:
         raise InvalidUsage(error, 400)
+
     try:
-        images = get_image_list_from_request(request)
+        image = get_image_from_request(request)
     except:
         raise InvalidUsage('read image error', 400)
 
-    user_id = face_recognition.register_face(user_id, images)
+    user_id = face_recognition.register_face(user_id, image)
 
     end = time.time()
     logging.info(f'request processed with time: {end - start}')
