@@ -51,7 +51,7 @@ class Detect:
         return None
 
     def calc_embedding(self, face_image):
-        return self.embedding_model(face_image.unsqueeze(0)).detach().cpu().numpy()
+        return self.embedding_model(face_image.unsqueeze(0)).detach().numpy()
 
     def face_detect(self, path, save=False):
         # Load Folder as Dataset
