@@ -126,7 +126,6 @@ class FaceRecognition:
             # Calculate embedding vector
             start = time.time()
             embedding_vector = self.face_detection.calc_embedding(face_image)
-            print('TEST------------>', embedding_vector)
             logging.info(f'calculate embedding vector: {time.time() - start}s')
             
             return (face_image_path, embedding_vector[0], detection_conf)

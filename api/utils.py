@@ -42,7 +42,7 @@ def validate_request_with_image(request):
         return '[image] field can not empty'
     
     filename = request.files['image'].filename
-    if not filename.endswith(IMAGE_FILE_EXT):
+    if not filename.lower().endswith(IMAGE_FILE_EXT):
         return f'invalid image file: {filename}, only accept {IMAGE_FILE_EXT} file'
 
     return None
