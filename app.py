@@ -4,6 +4,7 @@ import markdown
 import time
 
 from flask import Flask, request, jsonify
+from flask_cors import CORS, cross_origin
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 
@@ -16,6 +17,9 @@ os.makedirs('logs', exist_ok=True)
 logging.config.dictConfig(yaml.load(open('config/logging.conf'), Loader=yaml.FullLoader))
 
 app = Flask(__name__)
+
+cors = CORS(app)
+app.config['CORS_HEADERS'] = 'Content-Type'
 
 import tensorflow as tf
 # gpus = tf.config.experimental.list_physical_devices('GPU')
@@ -71,6 +75,7 @@ def api_doc():
     return app.send_static_file('api_doc.html')
 
 @app.route('/api/face/recognize', methods=['POST'])
+@cross_origin()
 def recognize_face():
     start = time.time()
     error = validate_request_with_image(request)
@@ -93,6 +98,7 @@ def recognize_face():
     )
 
 @app.route('/api/face/register', methods=['POST'])
+@cross_origin()
 def register_face():
     start = time.time()
     user_id = request.form.get('user_id')
@@ -116,6 +122,7 @@ def register_face():
     )
 
 @app.route('/api/license_plate/recognize', methods=['POST'])
+@cross_origin()
 def recognize_lp():
     start = time.time()
     error = validate_request_with_image(request)
