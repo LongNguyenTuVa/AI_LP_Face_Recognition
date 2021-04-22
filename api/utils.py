@@ -26,6 +26,8 @@ def get_image_from_request(request):
     if request.files.get('image'):
         image_data = request.files['image'].read()
         image = Image.open(io.BytesIO(image_data))
+        if image.mode == 'RGBA':
+            image = image.convert('RGB')
         return np.array(image)
     return None
 
