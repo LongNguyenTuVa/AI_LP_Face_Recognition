@@ -1,4 +1,4 @@
-from PIL import Image
+from PIL import Image, ImageOps
 from datetime import datetime
 
 import string
@@ -28,6 +28,9 @@ def get_image_from_request(request):
         image = Image.open(io.BytesIO(image_data))
         if image.mode == 'RGBA':
             image = image.convert('RGB')
+
+        image = ImageOps.exif_transpose(image)
+        
         return np.array(image)
     return None
 
