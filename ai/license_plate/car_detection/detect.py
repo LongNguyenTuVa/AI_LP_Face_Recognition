@@ -103,7 +103,7 @@ class CarDetection:  # for inference
                     if w * h == max(xy):
                         x1 = int(x - w / 2)
                         x2 = int(x + w / 2)
-                        y1 = int(y - w / 4)
+                        y1 = int(y - h / 4)
                         y2 = int(y + h / 2)
                         img0 = img0[y1:y2, x1:x2]
             else:
