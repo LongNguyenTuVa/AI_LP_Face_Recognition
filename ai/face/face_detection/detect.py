@@ -28,7 +28,7 @@ class Detect:
         self.detection_model = MTCNN(
                 image_size=160, margin=0, min_face_size=20, keep_all=False,
                 thresholds=[0.6, 0.7, 0.7], factor=0.709, post_process=True,
-                select_largest=True, device=device
+                select_largest=False, device=device
             )
         logging.info('PyTorch - Load face embedding model')
         self.embedding_model = InceptionResnetV1(pretrained='vggface2').eval().to(device)
