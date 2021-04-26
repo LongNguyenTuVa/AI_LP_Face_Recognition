@@ -5,6 +5,9 @@ from torchvision import datasets
 import numpy as np
 import os, glob, logging
 
+from PIL import Image
+import cv2
+
 workers = 0 if os.name == 'nt' else 4
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
@@ -34,18 +37,24 @@ class Detect:
     Detect face from image
     '''
     def detect(self, image):
-        image_alligned, prob =  self.detection_model(image, return_prob=True)
+
+        # Convert OpenCV image to PIL
+        img = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        im_pil = Image.fromarray(img)
+
+        image_alligned, prob =  self.detection_model(im_pil, return_prob=True)
 
         if image_alligned is not None:
-            boxes, probs = self.detection_model.detect(image)
+            boxes, probs = self.detection_model.detect(im_pil)
             boxes = boxes.squeeze()
 
             # Draw boxes and save faces
-            orginal_image = np.asarray(image)
+            orginal_image = np.asarray(im_pil)
             if type(boxes[0]) is np.ndarray:
                 box_sort = sorted(boxes, key=max_area)
                 boxes = box_sort[-1]
             face_image = orginal_image[int(boxes[1]):int(boxes[3]),int(boxes[0]):int(boxes[2])]
+            face_image = cv2.cvtColor(face_image, cv2.COLOR_RGB2BGR)
             return (image_alligned, face_image, prob)
             
         return None
