@@ -8,7 +8,7 @@ from ai.license_plate.lp_detection.detect import LP_Detect
 from ai.license_plate.lp_recognition.recognize import LP_Recognize
 from ai.license_plate.car_detection.detect import CarDetection
 from api.utils import generate_image_file_name
-from api.exceptions import InvalidUsage
+from api.exceptions import ErrorResponse
 
 class LPRecognition:
 
@@ -25,7 +25,7 @@ class LPRecognition:
     def recognize(self, image):
         image_name, suffix_name = generate_image_file_name('lp')
         image_path = os.path.join(self.lp_dir, image_name)
-        cv2.imwrite(image_path, cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
+        cv2.imwrite(image_path, image)
         logging.info(f'save image: {image_path}')
 
         # Detect license plate first
@@ -41,7 +41,7 @@ class LPRecognition:
 
             logging.info(f'image: {image_path} license plate detection confident: {detection_conf}')
         except:
-            raise InvalidUsage('can not detect license plate from image', 400)
+            raise ErrorResponse(406)
 
         recognition_conf = 0
         try:
@@ -51,7 +51,7 @@ class LPRecognition:
 
             logging.info(f'image: {image_path} license plate recognition confident: {recognition_conf}')
         except:
-            raise InvalidUsage('can not recognize license plate from image', 400)
+            raise ErrorResponse(407)
         
         detection_conf = int(round(detection_conf * 100))
         recognition_conf = int(round(recognition_conf * 100))
@@ -63,4 +63,9 @@ class LPRecognition:
             lp_image_path = os.path.join(self.lp_dir, suffix_name)
             cv2.imwrite(os.path.join(self.lp_dir, suffix_name), lp_image)
 
-        return lp_image_path, lp_text, f'{detection_conf}', f'{recognition_conf}'
+        return  {
+                    'text': lp_text,
+                    'detection_conf' : str(detection_conf),
+                    'recognition_conf' : str(recognition_conf),
+                    'image_path' : lp_image_path
+                }

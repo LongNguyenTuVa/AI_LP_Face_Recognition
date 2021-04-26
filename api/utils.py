@@ -9,6 +9,7 @@ import numpy as np
 
 from PIL import Image
 from datetime import datetime
+from api.exceptions import ErrorResponse
 
 IMAGE_FILE_EXT = ('.png', '.jpg', '.jpeg')
 
@@ -35,7 +36,7 @@ def get_image_from_request(request):
         return np.array(opencv_image)
     return None
 
-def id_generator(size=6, chars=string.ascii_uppercase + string.digits):
+def id_generator(size=4, chars=string.ascii_uppercase + string.digits):
     return ''.join(random.choice(chars) for _ in range(size))
 
 def generate_image_file_name(suffix):
@@ -45,10 +46,8 @@ def generate_image_file_name(suffix):
     
 def validate_request_with_image(request):
     if not request.files.get('image'):
-        return '[image] field cannot be empty'
+        raise ErrorResponse(400)
     
     filename = request.files['image'].filename
     if not filename.lower().endswith(IMAGE_FILE_EXT):
-        return f'invalid image file: {filename}, only accept {IMAGE_FILE_EXT} file'
-
-    return None
+        raise ErrorResponse(402)

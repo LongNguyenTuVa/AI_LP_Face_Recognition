@@ -11,7 +11,7 @@ from datetime import datetime
 from api.face_recognition import FaceRecognition, db
 from api.license_plate_recognition import LPRecognition
 from api.utils import *
-from api.exceptions import InvalidUsage
+from api.exceptions import ErrorResponse
 
 os.makedirs('logs', exist_ok=True)
 logging.config.dictConfig(yaml.load(open('config/logging.conf'), Loader=yaml.FullLoader))
@@ -43,7 +43,7 @@ app.config.update(
     DATA_DIR='static/images',
     DB_DIR='data/database',
     SQLALCHEMY_TRACK_MODIFICATIONS=False,
-    FACE_SIMILARITY_THRESHOLD=0.5,
+    FACE_SIMILARITY_THRESHOLD=0.75,
     UPLOAD_FOLDER='static/'
 )
 
@@ -71,30 +71,31 @@ if __name__ == '__main__':
 
 @app.route('/api')
 def api_doc():
-    return 'OK'
+    return jsonify(
+                message="OK",
+                result_code=200
+            )
 
 @app.route('/api/face/recognize', methods=['POST'])
 @cross_origin()
 def recognize_face():
     start = time.time()
-    error = validate_request_with_image(request)
-    if error:
-        raise InvalidUsage(error, 400)
+    validate_request_with_image(request)
 
     try:
         image = get_image_from_request(request)
     except:
-        raise InvalidUsage('read image error', 400)
+        raise ErrorResponse(403)
 
-    face_image_path, user_id, detection_conf, recognition_distance = face_recognition.recognize(image)
+    # face_image_path, user_id, detection_conf, recognition_distance = face_recognition.recognize(image)
+    result = face_recognition.recognize(image)
     end = time.time()
     logging.info(f'request processed with time: {end - start}')
     return jsonify(
-        user_id=user_id,
-        detection_conf=detection_conf,
-        recognition_distance=recognition_distance,
-        image_path=face_image_path
-    )
+                message="successfully recognized",
+                data=result,
+                result_code=200
+            )
 
 @app.route('/api/face/register', methods=['POST'])
 @cross_origin()
@@ -103,16 +104,14 @@ def register_face():
     user_id = request.form.get('user_id')
 
     if not user_id:
-        raise InvalidUsage('[user_id] field cannot be empty', 400)
+        raise ErrorResponse(401)
 
-    error = validate_request_with_image(request)
-    if error:
-        raise InvalidUsage(error, 400)
+    validate_request_with_image(request)
 
     try:
         image = get_image_from_request(request)
     except:
-        raise InvalidUsage('read image error', 400)
+        raise ErrorResponse(403)
 
     user_id = face_recognition.register_face(user_id, image)
 
@@ -120,6 +119,7 @@ def register_face():
     logging.info(f'request processed with time: {end - start}')
 
     return jsonify(
+        result_code=200,
         message='successfully registered'
     )
 
@@ -127,25 +127,23 @@ def register_face():
 @cross_origin()
 def recognize_lp():
     start = time.time()
-    error = validate_request_with_image(request)
-    if error:
-        raise InvalidUsage(error, 400)
+    validate_request_with_image(request)
+
     try:
         image = get_image_from_request(request)
     except:
-        raise InvalidUsage('read image error', 400)
+        raise ErrorResponse(403)
 
-    lp_image_path, lp_text, detection_conf, recognition_conf = lp_recognition.recognize(image)
+    result = lp_recognition.recognize(image)
     end = time.time()
     logging.info(f'request processed with time: {end - start}')
     return jsonify(
-        text=lp_text,
-        detection_conf=detection_conf,
-        recognition_conf=recognition_conf,
-        image_path=lp_image_path
-    )
+                message="successfully recognized",
+                data=result,
+                result_code=200
+            )
 
-@app.errorhandler(InvalidUsage)
+@app.errorhandler(ErrorResponse)
 def handle_invalid_usage(error):
     response = jsonify(error.to_dict())
     response.status_code = error.status_code

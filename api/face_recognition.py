@@ -9,7 +9,7 @@ from datetime import datetime
 
 from ai.face.face_detection.detect import Detect
 from api.utils import *
-from api.exceptions import InvalidUsage
+from api.exceptions import ErrorResponse
 
 db = SQLAlchemy()
 
@@ -34,16 +34,19 @@ class FaceRecognition:
         self.face_detection = Detect()
 
         self.face_dir = os.path.join(data_dir, 'faces')
+        self.face_template_dir = os.path.join(data_dir, 'face_templates')
+
         self.similarity_threshold = threshold
 
-        # create license plate folder
+        # create faces folder
         os.makedirs(self.face_dir, exist_ok=True)
+        os.makedirs(self.face_template_dir, exist_ok=True)
 
     def recognize(self, image):
         embedding_vectors = self.get_embedding_vectors()
         embedding_result = self.calc_embedding(image)
         if not embedding_result:
-            raise InvalidUsage('can not detect face from image', 400)
+            raise ErrorResponse(404)
         (face_image_path, embedding_vector, detection_conf) = embedding_result
         logging.info(f'detect face with face_image_path: {face_image_path}, detection_conf: {detection_conf}')
 
@@ -52,6 +55,7 @@ class FaceRecognition:
             user_id = item[0]
             e = item[1]
             recognition_distance = self.cosine_similarity(embedding_vector, e)
+            logging.info(f'distance with {user_id} is: {recognition_distance}')
             if recognition_distance >= self.similarity_threshold:
                 users.append((user_id, recognition_distance))
 
@@ -59,21 +63,26 @@ class FaceRecognition:
             matched_user = max(users, key=lambda item:item[1])
             recognition_distance = int(round(matched_user[1] * 100) )
             detection_conf = int(round(detection_conf * 100))
-            return face_image_path, matched_user[0], str(detection_conf), str(recognition_distance)
+            # return face_image_path, matched_user[0], str(detection_conf), str(recognition_distance)
+            user_id = matched_user[0]
+            return  {
+                        'user_id': user_id,
+                        'detection_conf': str(detection_conf),
+                        'recognition_distance': str(recognition_distance),
+                        'image_path':str(face_image_path)
+                    }
         else:
-            raise InvalidUsage('user not found', 400)
+            raise ErrorResponse(405)
 
     def register_face(self, user_id, image):
         logging.info(f'Register a new image for user_id: {user_id}')
 
         registered_date = datetime.now()
-        embedding_result = self.calc_embedding(image)
+        embedding_result = self.calc_embedding(image, user_id)
         if not embedding_result:
-            raise InvalidUsage('can not detect face from image', 400)
+            raise ErrorResponse(404)
         (face_image_path, embedding_vector, detection_conf) = embedding_result
-
         user = User(user_id, convert_embedding_vector_to_string(embedding_vector), face_image_path, registered_date)
-        
         self.save_user_to_database(user_id, user)
 
         return user_id
@@ -95,9 +104,16 @@ class FaceRecognition:
             embedding_vectors.append((user.user_id, embedding_vector))
         return embedding_vectors
                 
-    def calc_embedding(self, image):
+    def calc_embedding(self, image, user_id=None):
         image_name, suffix_name = generate_image_file_name('face')
-        image_path = os.path.join(self.face_dir, image_name)
+
+        if user_id:
+            prefix = user_id if len(user_id) <= 10 else user_id[:10]
+            image_name = prefix + '_' + image_name
+            image_path = os.path.join(self.face_template_dir, image_name)
+        else:
+            image_path = os.path.join(self.face_dir, image_name)
+        
         cv2.imwrite(image_path, image)
         logging.info(f'save image: {image_path}')
 
@@ -109,7 +125,13 @@ class FaceRecognition:
             (face_image, original_face_image, detection_conf) = face_result
             logging.info(f'image: {image_path} face detection confident: {detection_conf}')
 
-            face_image_path = os.path.join(self.face_dir, suffix_name)
+            if user_id:
+                prefix = user_id if len(user_id) <= 10 else user_id[:10]
+                suffix_name = prefix + '_' + suffix_name
+                face_image_path = os.path.join(self.face_template_dir, suffix_name)
+            else:
+                face_image_path = os.path.join(self.face_dir, suffix_name)
+
             logging.info(f'save face image: {face_image_path}')
             cv2.imwrite(face_image_path, original_face_image)
 
