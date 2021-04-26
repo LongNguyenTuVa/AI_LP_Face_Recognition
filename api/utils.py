@@ -30,8 +30,9 @@ def get_image_from_request(request):
             image = image.convert('RGB')
 
         image = ImageOps.exif_transpose(image)
-        
-        return np.array(image)
+        opencv_image = np.array(image)
+        opencv_image = cv2.cvtColor(opencv_image, cv2.COLOR_RGB2BGR)
+        return np.array(opencv_image)
     return None
 
 def id_generator(size=6, chars=string.ascii_uppercase + string.digits):
@@ -44,7 +45,7 @@ def generate_image_file_name(suffix):
     
 def validate_request_with_image(request):
     if not request.files.get('image'):
-        return '[image] field can not empty'
+        return '[image] field cannot be empty'
     
     filename = request.files['image'].filename
     if not filename.lower().endswith(IMAGE_FILE_EXT):

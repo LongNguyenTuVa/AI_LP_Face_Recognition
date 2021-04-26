@@ -15,7 +15,7 @@ db = SQLAlchemy()
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer)
+    user_id = db.Column(db.String)
     embedding_str = db.Column(db.String)
     face_image_path = db.Column(db.String)
     registered_date = db.Column(db.DateTime)
@@ -30,12 +30,11 @@ class User(db.Model):
         return f'{self.user_id}, {self.registered_date}'
 
 class FaceRecognition:
-    def __init__(self, data_dir, threshold, min_image):
+    def __init__(self, data_dir, threshold):
         self.face_detection = Detect()
 
         self.face_dir = os.path.join(data_dir, 'faces')
         self.similarity_threshold = threshold
-        self.min_image = min_image
 
         # create license plate folder
         os.makedirs(self.face_dir, exist_ok=True)
@@ -58,18 +57,15 @@ class FaceRecognition:
 
         if len(users) != 0: 
             matched_user = max(users, key=lambda item:item[1])
+            recognition_distance = int(round(matched_user[1] * 100) )
             detection_conf = int(round(detection_conf * 100))
-            return face_image_path, matched_user[0], f'{detection_conf}%', "{:.2f}".format(matched_user[1])
+            return face_image_path, matched_user[0], str(detection_conf), str(recognition_distance)
         else:
             raise InvalidUsage('user not found', 400)
 
     def register_face(self, user_id, image):
-        if not user_id:
-            user_id = self.get_user_id()
-            logging.info(f'Register a new user wit user_id: {user_id}')
-        else:
-            logging.info(f'Register new images for existed user: {user_id}')
-        
+        logging.info(f'Register a new image for user_id: {user_id}')
+
         registered_date = datetime.now()
         embedding_result = self.calc_embedding(image)
         if not embedding_result:
@@ -92,10 +88,6 @@ class FaceRecognition:
         db.session.add(user)
         db.session.commit()
 
-    def get_user_id(self):
-        user_ids = [user.user_id for user in User.query.all()]
-        return max(user_ids) + 1 if len(user_ids) != 0 else 1
-
     def get_embedding_vectors(self):
         embedding_vectors = []
         for user in User.query.all():
@@ -106,7 +98,7 @@ class FaceRecognition:
     def calc_embedding(self, image):
         image_name, suffix_name = generate_image_file_name('face')
         image_path = os.path.join(self.face_dir, image_name)
-        cv2.imwrite(image_path, cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
+        cv2.imwrite(image_path, image)
         logging.info(f'save image: {image_path}')
 
         start = time.time()
@@ -119,8 +111,6 @@ class FaceRecognition:
 
             face_image_path = os.path.join(self.face_dir, suffix_name)
             logging.info(f'save face image: {face_image_path}')
-
-            original_face_image = cv2.cvtColor(original_face_image, cv2.COLOR_BGR2RGB)
             cv2.imwrite(face_image_path, original_face_image)
 
             # Calculate embedding vector

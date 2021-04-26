@@ -43,8 +43,7 @@ app.config.update(
     DATA_DIR='static/images',
     DB_DIR='data/database',
     SQLALCHEMY_TRACK_MODIFICATIONS=False,
-    FACE_SIMILARITY_THRESHOLD=0.7,
-    MIN_IMAGE=3,
+    FACE_SIMILARITY_THRESHOLD=0.5,
     UPLOAD_FOLDER='static/'
 )
 
@@ -65,7 +64,7 @@ db.create_all()
 
 global lp_recognition, face_recognition
 lp_recognition = LPRecognition(data_dir)
-face_recognition = FaceRecognition(data_dir, app.config['FACE_SIMILARITY_THRESHOLD'], app.config['MIN_IMAGE'])
+face_recognition = FaceRecognition(data_dir, app.config['FACE_SIMILARITY_THRESHOLD'])
 
 if __name__ == '__main__':
     app.run()
@@ -103,6 +102,9 @@ def register_face():
     start = time.time()
     user_id = request.form.get('user_id')
 
+    if not user_id:
+        raise InvalidUsage('[user_id] field cannot be empty', 400)
+
     error = validate_request_with_image(request)
     if error:
         raise InvalidUsage(error, 400)
@@ -118,7 +120,7 @@ def register_face():
     logging.info(f'request processed with time: {end - start}')
 
     return jsonify(
-        user_id=str(user_id)
+        message='successfully registered'
     )
 
 @app.route('/api/license_plate/recognize', methods=['POST'])

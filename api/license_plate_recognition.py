@@ -63,4 +63,4 @@ class LPRecognition:
             lp_image_path = os.path.join(self.lp_dir, suffix_name)
             cv2.imwrite(os.path.join(self.lp_dir, suffix_name), lp_image)
 
-        return lp_image_path, lp_text, f'{detection_conf}%', f'{recognition_conf}%'
+        return lp_image_path, lp_text, f'{detection_conf}', f'{recognition_conf}'
