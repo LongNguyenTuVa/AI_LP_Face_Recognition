@@ -69,9 +69,9 @@ face_recognition = FaceRecognition(data_dir, app.config['FACE_SIMILARITY_THRESHO
 if __name__ == '__main__':
     app.run()
 
-@app.route('/api/docs')
+@app.route('/api')
 def api_doc():
-    return app.send_static_file('api_doc.html')
+    return 'OK'
 
 @app.route('/api/face/recognize', methods=['POST'])
 @cross_origin()
