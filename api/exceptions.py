@@ -9,7 +9,7 @@ class ErrorResponse(Exception):
         403 : 'cannot read image',
         404 : 'cannot detect face from image',
         405 : 'user not found',
-        406 : 'can not detect license plate from image',
+        406 : 'cannot detect license plate from image',
         407 : 'cannot recognize license plate from image',
     }
 
