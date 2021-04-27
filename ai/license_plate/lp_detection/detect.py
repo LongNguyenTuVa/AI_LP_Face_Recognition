@@ -76,8 +76,6 @@ class LP_Detect:
             else:
                 self.plate_type = 2
                 plate_image = cv2.resize(plate_image, (280, 200))
-                plt.imshow(plate_image)
-                plt.show()
 
         return plate_image, self.prob[0], self.plate_type
 

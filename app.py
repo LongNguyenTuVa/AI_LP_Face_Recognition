@@ -79,6 +79,7 @@ def api_doc():
 @app.route('/api/face/recognize', methods=['POST'])
 @cross_origin()
 def recognize_face():
+    logging.info('receive request /api/face/recognize')
     start = time.time()
     validate_request_with_image(request)
 
@@ -91,6 +92,7 @@ def recognize_face():
     result = face_recognition.recognize(image)
     end = time.time()
     logging.info(f'request processed with time: {end - start}')
+    
     return jsonify(
                 message="successfully recognized",
                 data=result,
@@ -100,6 +102,7 @@ def recognize_face():
 @app.route('/api/face/register', methods=['POST'])
 @cross_origin()
 def register_face():
+    logging.info('receive request /api/face/register')
     start = time.time()
     user_id = request.form.get('user_id')
 
@@ -126,6 +129,7 @@ def register_face():
 @app.route('/api/license_plate/recognize', methods=['POST'])
 @cross_origin()
 def recognize_lp():
+    logging.info('receive request /api/license_plate/recognize')
     start = time.time()
     validate_request_with_image(request)
 

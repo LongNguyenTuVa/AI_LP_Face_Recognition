@@ -5,7 +5,8 @@ import logging
 import time
 
 from ai.license_plate.lp_detection.detect import LP_Detect
-from ai.license_plate.lp_recognition.recognize import LP_Recognize
+# from ai.license_plate.lp_recognition.recognize import LP_Recognize
+from ai.license_plate.lp_recognition.recognize_crnn import LPRCNN
 from ai.license_plate.car_detection.detect import CarDetection
 from api.utils import generate_image_file_name
 from api.exceptions import ErrorResponse
@@ -14,7 +15,8 @@ class LPRecognition:
 
     def __init__(self, data_dir):
         self.lp_detection = LP_Detect()
-        self.lp_recognition = LP_Recognize()
+        # self.lp_recognition = LP_Recognize()
+        self.lp_recognition = LPRCNN()
         self.car_detection = CarDetection()
 
         self.lp_dir = os.path.join(data_dir, 'license_plates')
