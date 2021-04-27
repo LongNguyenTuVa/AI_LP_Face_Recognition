@@ -76,6 +76,7 @@ class LP_Detect:
             else:
                 self.plate_type = 2
                 plate_image = cv2.resize(plate_image, (280, 200))
+        plate_image = cv2.cvtColor(plate_image, cv2.COLOR_RGB2BGR)
 
         return plate_image, self.prob[0], self.plate_type
 
