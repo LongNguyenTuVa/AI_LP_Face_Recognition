@@ -64,6 +64,8 @@ class CarDetection:  # for inference
             CarDetection.__shared_instance = self
         
     def car_detect(self, img0):
+        car_type = 0
+
         stride = int(self.model.stride.max())  # model stride
         # dataset = LoadImages(self.image_path, img_size=640, stride=stride)
         # img0 = cv2.imread(image_path)  # BGR
@@ -94,6 +96,7 @@ class CarDetection:  # for inference
                     xy.append(w * h)
 
                 for *xyxy, conf, cls in reversed(det):
+                    car_type = int(cls)
                     xywh = (xyxy2xywh(torch.tensor(xyxy).view(1, 4)) / gn).view(-1).tolist()
 
                     x = xywh[0] * img0.shape[1]
@@ -108,4 +111,4 @@ class CarDetection:  # for inference
                         img0 = img0[y1:y2, x1:x2]
             else:
                 img0 = img0[int(img0.shape[0] * 0.5):, :]
-        return img0
+        return img0, car_type

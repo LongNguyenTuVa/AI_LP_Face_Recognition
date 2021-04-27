@@ -32,11 +32,14 @@ def preprocess_image(image,resize=False):
         img = cv2.resize(img, (224,224))
     return img
 
-def get_plate(image, wpod_net, Dmax=608, Dmin=256):
+def get_plate(image, wpod_net, Dmax=608, Dmin=256, car_type=0):
     vehicle = preprocess_image(image)
-    ratio = float(max(vehicle.shape[:2])) / min(vehicle.shape[:2])
-    side = int(ratio * Dmin)
-    bound_dim = min(side, Dmax)
+    # ratio = float(max(vehicle.shape[:2])) / min(vehicle.shape[:2])
+    # side = int(ratio * Dmin)
+    # bound_dim = min(side, Dmax)
+    bound_dim = 350
+    if car_type == 2:
+        bound_dim = 300
     _ , plate_image, _, coordinate, prob = detect_lp(wpod_net, vehicle, bound_dim, lp_threshold=0.5, wh_threshold = 1.3)
     return plate_image, coordinate, prob
 
@@ -60,8 +63,9 @@ class LP_Detect:
             self.wpod_net = load_model("ai/license_plate/models/wpod-net.json") 
             LP_Detect.__shared_instance = self
 
-    def detect(self, image, classify=False):
-        plate_image, self.coordinate, self.prob = get_plate(image, self.wpod_net)
+    def detect(self, image, classify=False, car_type=0):
+        print('car_type1', car_type)
+        plate_image, self.coordinate, self.prob = get_plate(image, self.wpod_net, car_type=car_type)
         plate_image = (255*plate_image[0]).astype(np.uint8)
         if classify:
             plate = cv2.cvtColor(plate_image, cv2.COLOR_BGR2GRAY)

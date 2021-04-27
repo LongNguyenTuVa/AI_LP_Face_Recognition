@@ -3,6 +3,7 @@ import os, sys
 import cv2
 import logging
 import time
+import imutils
 
 from ai.license_plate.lp_detection.detect import LP_Detect
 # from ai.license_plate.lp_recognition.recognize import LP_Recognize
@@ -32,15 +33,15 @@ class LPRecognition:
 
         # Detect license plate first
         detection_conf = 0
+    
+        start = time.time()
+        car_image, car_type = self.car_detection.car_detect(image)        
+        car_image_resized = imutils.resize(car_image, width=1000)
         try:
             start = time.time()
-            car_image = self.car_detection.car_detect(image)
-            logging.info(f'detect car: {time.time() - start}s')
-
-            start = time.time()
-            lp_image, detection_conf, plate_type = self.lp_detection.detect(car_image, classify=True)
+            print('car_type0', car_type)
+            lp_image, detection_conf, plate_type = self.lp_detection.detect(car_image_resized, classify=True, car_type=car_type)
             logging.info(f'detect license plate: {time.time() - start}s')
-
             logging.info(f'image: {image_path} license plate detection confident: {detection_conf}')
         except:
             raise ErrorResponse(406)
