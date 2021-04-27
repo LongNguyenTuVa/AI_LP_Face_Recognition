@@ -73,7 +73,7 @@ if __name__ == '__main__':
 def api_doc():
     return jsonify(
                 message="OK",
-                result_code=200
+                code=200
             )
 
 @app.route('/api/face/recognize', methods=['POST'])
@@ -94,7 +94,7 @@ def recognize_face():
     return jsonify(
                 message="successfully recognized",
                 data=result,
-                result_code=200
+                code=200
             )
 
 @app.route('/api/face/register', methods=['POST'])
@@ -119,7 +119,7 @@ def register_face():
     logging.info(f'request processed with time: {end - start}')
 
     return jsonify(
-        result_code=200,
+        code=200,
         message='successfully registered'
     )
 
@@ -140,7 +140,7 @@ def recognize_lp():
     return jsonify(
                 message="successfully recognized",
                 data=result,
-                result_code=200
+                code=200
             )
 
 @app.errorhandler(ErrorResponse)

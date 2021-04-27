@@ -21,6 +21,6 @@ class ErrorResponse(Exception):
 
     def to_dict(self):
         response = dict(())
-        response['result_code'] = self.error_code
+        response['code'] = self.error_code
         response['message'] = self.message
         return response
