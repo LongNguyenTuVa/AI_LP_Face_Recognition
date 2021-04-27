@@ -3,11 +3,13 @@ import torch
 from torch.utils.data import DataLoader
 from torchvision import datasets
 import numpy as np
-import os, glob
+import os, glob, logging
+
+from PIL import Image
+import cv2
 
 workers = 0 if os.name == 'nt' else 4
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
-
 
 def collate_fn(x):
     return x[0]
@@ -20,39 +22,47 @@ def save_npy(names, embeddings, face_alligned, path):
             "Faces": face_alligned.tolist()}
     np.save(path + "/" + 'data.npy', data)
 
-
 class Detect:
     def __init__(self):
-        # save_path='single_image.jpg'
+        logging.info('PyTorch - Load face detection model')
         self.detection_model = MTCNN(
                 image_size=160, margin=0, min_face_size=20, keep_all=False,
                 thresholds=[0.6, 0.7, 0.7], factor=0.709, post_process=True,
-                select_largest=True, device=device
+                select_largest=False, device=device
             )
+        logging.info('PyTorch - Load face embedding model')
         self.embedding_model = InceptionResnetV1(pretrained='vggface2').eval().to(device)
 
     '''
     Detect face from image
     '''
     def detect(self, image):
-        image_alligned, prob =  self.detection_model(image, return_prob=True)
+
+        # Convert OpenCV image to PIL
+        img = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        im_pil = Image.fromarray(img)
+
+        image_alligned, prob =  self.detection_model(im_pil, return_prob=True)
 
         if image_alligned is not None:
-            boxes, probs = self.detection_model.detect(image)
+            boxes, probs = self.detection_model.detect(im_pil)
             boxes = boxes.squeeze()
 
             # Draw boxes and save faces
-            orginal_image = np.asarray(image)
+            orginal_image = np.asarray(im_pil)
             if type(boxes[0]) is np.ndarray:
                 box_sort = sorted(boxes, key=max_area)
-                boxes = box_sort[0]     
+                boxes = box_sort[-1]
             face_image = orginal_image[int(boxes[1]):int(boxes[3]),int(boxes[0]):int(boxes[2])]
+            face_image = cv2.cvtColor(face_image, cv2.COLOR_RGB2BGR)
             return (image_alligned, face_image, prob)
             
         return None
 
     def calc_embedding(self, face_image):
-        return self.embedding_model(face_image.unsqueeze(0)).detach().cpu().numpy()
+        # face_image = torch.stack(face_image).to(device)
+        embeddings = self.embedding_model(face_image.unsqueeze(0).to(device)).detach().cpu()
+        return embeddings.numpy()
 
     def face_detect(self, path, save=False):
         # Load Folder as Dataset

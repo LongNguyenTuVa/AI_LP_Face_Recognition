@@ -8,9 +8,11 @@ from keras.models import model_from_json
 from tensorflow import keras
 import glob
 import tensorflow as tf
+import logging
 
 def load_model(path):
     try:
+        logging.info(f'TensorFlow - Load LP detection model {path}')
         path = splitext(path)[0]
         with open('%s.json' % path, 'r') as json_file:
             model_json = json_file.read()
@@ -53,12 +55,12 @@ class LP_Detect:
             raise Exception ("This class is a singleton class !") 
         else: 
             # Singleton Pattern Design only instantiate the model once
+            logging.info('TensorFlow - Load LP classification model')
             self.model = tf.keras.models.load_model('ai/license_plate/lp_detection/Classification_license_plate.h5')
             self.wpod_net = load_model("ai/license_plate/models/wpod-net.json") 
             LP_Detect.__shared_instance = self
 
     def detect(self, image, classify=False):
-        
         plate_image, self.coordinate, self.prob = get_plate(image, self.wpod_net)
         plate_image = (255*plate_image[0]).astype(np.uint8)
         if classify:

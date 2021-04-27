@@ -1,4 +1,4 @@
-import cv2
+import cv2, logging
 import numpy as np
 import matplotlib.pyplot as plt
 import os, glob, re, time, sys
@@ -148,6 +148,7 @@ class LP_Recognize:
             raise Exception ("This class is a singleton class !") 
         else: 
             # Singleton Pattern Design only instantiate the model once
+            logging.info('TensorFlow - Load LP recognition model')
             self.model = build_model(img_height=self.img_height,img_width=self.img_width)
             self.model.load_weights('ai/license_plate/models/CV_together_Weight.h5')
             self.model = keras.models.Model(

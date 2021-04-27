@@ -142,6 +142,7 @@ ai/license_plate/data/
 ai/face/data/
 data/
 static/images
+static/
 test.py
 
 # log
