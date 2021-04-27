@@ -7,8 +7,9 @@ from api.license_plate_recognition import LPRecognition
 DATA_DIR='static/images'
 lp_recognition = LPRecognition(DATA_DIR)
 
-test_dir = 'test_data/license_plates/20210412_LP_TestData'
-# test_dir = 'test_data/license_plates/20210423_Royal_TestData'
+# test_dir = 'test_data/20210412_LP_TestData'
+test_dir = 'test_data/Royal'
+# test_dir = 'test_data/error'
 test_output_dir = test_dir + '_Ouput'
 test_error_dir = test_output_dir + '/error'
 test_success_dir = test_output_dir + '/success'

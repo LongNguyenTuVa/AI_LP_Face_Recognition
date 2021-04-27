@@ -39,7 +39,6 @@ class LPRecognition:
         car_image_resized = imutils.resize(car_image, width=1000)
         try:
             start = time.time()
-            print('car_type0', car_type)
             lp_image, detection_conf, plate_type = self.lp_detection.detect(car_image_resized, classify=True, car_type=car_type)
             logging.info(f'detect license plate: {time.time() - start}s')
             logging.info(f'image: {image_path} license plate detection confident: {detection_conf}')

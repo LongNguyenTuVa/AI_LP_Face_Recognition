@@ -33,13 +33,24 @@ def preprocess_image(image,resize=False):
     return img
 
 def get_plate(image, wpod_net, Dmax=608, Dmin=256, car_type=0):
+    # if car_type != 2:
+    #     Dmax = 360
+    #     Dmin = 180
+    # else:
+    #     Dmax = 320
+    #     Dmin = 150
+
     vehicle = preprocess_image(image)
     # ratio = float(max(vehicle.shape[:2])) / min(vehicle.shape[:2])
     # side = int(ratio * Dmin)
     # bound_dim = min(side, Dmax)
-    bound_dim = 350
+
+    # print('h, w', image.shape[:2])
+    # print('ratio', ratio, 'side', side, 'bound_dim', bound_dim)
     if car_type == 2:
-        bound_dim = 300
+        bound_dim = 320
+    else:
+        bound_dim = 360
     _ , plate_image, _, coordinate, prob = detect_lp(wpod_net, vehicle, bound_dim, lp_threshold=0.5, wh_threshold = 1.3)
     return plate_image, coordinate, prob
 
@@ -64,7 +75,6 @@ class LP_Detect:
             LP_Detect.__shared_instance = self
 
     def detect(self, image, classify=False, car_type=0):
-        print('car_type1', car_type)
         plate_image, self.coordinate, self.prob = get_plate(image, self.wpod_net, car_type=car_type)
         plate_image = (255*plate_image[0]).astype(np.uint8)
         if classify:
