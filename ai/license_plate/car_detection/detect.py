@@ -111,6 +111,7 @@ class CarDetection:  # for inference
                         y1 = int(y)
                         y2 = int(y + h / 2)
                         img1 = img0[y1:y2, x1:x2]
+                        img2 = None
                     elif len(xy) >= 2 and w * h == xy[-2]:
                         x1 = int(x - w / 2)
                         x2 = int(x + w / 2)

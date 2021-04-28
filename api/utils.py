@@ -33,7 +33,7 @@ def get_image_from_request(request):
         image = ImageOps.exif_transpose(image)
         opencv_image = np.array(image)
         opencv_image = cv2.cvtColor(opencv_image, cv2.COLOR_RGB2BGR)
-        return np.array(opencv_image)
+        return opencv_image
     return None
 
 def id_generator(size=4, chars=string.ascii_uppercase + string.digits):

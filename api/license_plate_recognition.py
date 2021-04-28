@@ -36,20 +36,23 @@ class LPRecognition:
     
         start = time.time()
         car_image, car_type = self.car_detection.car_detect(image)
-        car_image_resized = []
-        for im in car_image:
-            car_image_resized.append(imutils.resize(im, width=1000))
+
         try:
             start = time.time()
-            lp_image, detection_conf, plate_type = self.lp_detection.detect(car_image_resized[0], classify=True, car_type=car_type)
+            car_image_resized = imutils.resize(car_image[0], width=1000)
+
+            lp_image, detection_conf, plate_type = self.lp_detection.detect(car_image_resized, classify=True, car_type=car_type)
+
             logging.info(f'detect license plate: {time.time() - start}s')
             logging.info(f'image: {image_path} license plate detection confident: {detection_conf}')
         except:
             try:
-                start = time.time()
-                lp_image, detection_conf, plate_type = self.lp_detection.detect(car_image_resized[1], classify=True, car_type=car_type)
-                logging.info(f'detect license plate: {time.time() - start}s')
-                logging.info(f'image: {image_path} license plate detection confident: {detection_conf}')
+                if car_image[1].size != 0:
+                    start = time.time()
+                    car_image_resized = imutils.resize(car_image[1], width=1000)
+                    lp_image, detection_conf, plate_type = self.lp_detection.detect(car_image_resized, classify=True, car_type=car_type)
+                    logging.info(f'detect license plate: {time.time() - start}s')
+                    logging.info(f'image: {image_path} license plate detection confident: {detection_conf}')
             except:
                 raise ErrorResponse(406)
 
