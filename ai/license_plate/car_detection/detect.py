@@ -95,6 +95,7 @@ class CarDetection:  # for inference
                     w = xywh[2] * img0.shape[1]
                     h = xywh[3] * img0.shape[0]
                     xy.append(w * h)
+                xy = sorted(xy)
 
                 for *xyxy, conf, cls in reversed(det):
                     car_type = int(cls)
@@ -104,12 +105,19 @@ class CarDetection:  # for inference
                     y = xywh[1] * img0.shape[0]
                     w = xywh[2] * img0.shape[1]
                     h = xywh[3] * img0.shape[0]
-                    if w * h == max(xy):
+                    if w * h == xy[-1]:
                         x1 = int(x - w / 2)
                         x2 = int(x + w / 2)
                         y1 = int(y)
                         y2 = int(y + h / 2)
-                        img0 = img0[y1:y2, x1:x2]
+                        img1 = img0[y1:y2, x1:x2]
+                    elif len(xy) >= 2 and w * h == xy[-2]:
+                        x1 = int(x - w / 2)
+                        x2 = int(x + w / 2)
+                        y1 = int(y)
+                        y2 = int(y + h / 2)
+                        img2 = img0[y1:y2, x1:x2]
             else:
-                img0 = img0[int(img0.shape[0] * 0.5):, :]
-        return img0, car_type
+                img1 = img0[int(img0.shape[0] * 0.5):, :]
+                img2 = None
+        return [img1, img2], car_type
