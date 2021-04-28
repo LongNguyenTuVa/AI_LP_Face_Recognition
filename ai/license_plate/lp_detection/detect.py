@@ -48,7 +48,7 @@ def get_plate(image, wpod_net, Dmax=608, Dmin=256, car_type=0):
     # print('h, w', image.shape[:2])
     # print('ratio', ratio, 'side', side, 'bound_dim', bound_dim)
     if car_type == 2:
-        bound_dim = 320
+        bound_dim = 300
     else:
         bound_dim = 360
     _ , plate_image, _, coordinate, prob = detect_lp(wpod_net, vehicle, bound_dim, lp_threshold=0.5, wh_threshold = 1.3)

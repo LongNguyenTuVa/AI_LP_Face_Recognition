@@ -9,7 +9,7 @@ lp_recognition = LPRecognition(DATA_DIR)
 
 # test_dir = 'test_data/license_plates/20210423_Royal_TestData'
 test_dir = 'test_data/license_plates/errors'
-# test_dir = 'test_data/error'
+# test_dir = 'test_data/license_plates/OneDrive_1_4-27-2021/Data11'
 test_output_dir = test_dir + '_Ouput'
 test_error_dir = test_output_dir + '/error'
 test_success_dir = test_output_dir + '/success'
