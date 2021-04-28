@@ -1,4 +1,4 @@
-facenet-pytorch==2.4.1
+facenet-pytorch==2.5.2
 matplotlib==3.3.0
 opencv-python==4.5.1.48
 keras==2.4.3

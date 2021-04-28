@@ -111,29 +111,25 @@ class FaceRecognition:
             prefix = user_id if len(user_id) <= 10 else user_id[:10]
             image_name = prefix + '_' + image_name
             image_path = os.path.join(self.face_template_dir, image_name)
+
+            suffix_name = prefix + '_' + suffix_name
+            face_image_path = os.path.join(self.face_template_dir, suffix_name)
+
         else:
             image_path = os.path.join(self.face_dir, image_name)
+            face_image_path = os.path.join(self.face_dir, suffix_name)
         
         cv2.imwrite(image_path, image)
         logging.info(f'save image: {image_path}')
 
         start = time.time()
-        face_result = self.face_detection.detect(image)
+        face_image, detection_conf = self.face_detection.detect(image, face_image_path)
         logging.info(f'face detection: {time.time() - start}s')
 
-        if face_result:
-            (face_image, original_face_image, detection_conf) = face_result
+        if face_image is not None and detection_conf is not None:
+
             logging.info(f'image: {image_path} face detection confident: {detection_conf}')
-
-            if user_id:
-                prefix = user_id if len(user_id) <= 10 else user_id[:10]
-                suffix_name = prefix + '_' + suffix_name
-                face_image_path = os.path.join(self.face_template_dir, suffix_name)
-            else:
-                face_image_path = os.path.join(self.face_dir, suffix_name)
-
             logging.info(f'save face image: {face_image_path}')
-            cv2.imwrite(face_image_path, original_face_image)
 
             # Calculate embedding vector
             start = time.time()

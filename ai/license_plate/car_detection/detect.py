@@ -51,8 +51,9 @@ class CarDetection:  # for inference
             CarDetection() 
         return CarDetection.__shared_instance
     def __init__(self):
-        self.device = 'cpu'
+        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.img_size = 640
+
         if CarDetection.__shared_instance != None: 
             raise Exception ("This class is a singleton class !") 
         else: 
@@ -79,7 +80,7 @@ class CarDetection:  # for inference
         img /= 255.0  # 0 - 255 to 0.0 - 1.0
         if img.ndimension() == 3:
             img = img.unsqueeze(0)
-        pred = self.model(img, augment=True)[0]
+        pred = self.model(img, augment=False)[0]
         pred = non_max_suppression(pred, 0.2, 0.45, classes=[2, 5, 7], agnostic=True)
         xy = []
         for i, det in enumerate(pred):  # detections per image
