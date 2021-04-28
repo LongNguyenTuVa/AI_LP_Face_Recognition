@@ -136,3 +136,18 @@ dmypy.json
 
 # Cython debug symbols
 cython_debug/
+
+# test data
+ai/license_plate/data/
+ai/face/data/
+data/
+test_data/
+static/images
+static/
+test.py
+
+# log
+logs
+
+# model
+yolov5s.pt
